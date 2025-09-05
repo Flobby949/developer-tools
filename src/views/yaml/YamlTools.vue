@@ -2,27 +2,23 @@
   <ToolPanel title="YAML工具" description="在YAML格式和Java Properties格式之间进行转换">
     <!-- 操作工具栏 -->
     <div class="yaml-toolbar">
-      <div class="tool-group">
-        <label class="mode-label">
-          <input
-            type="radio"
-            v-model="toolStore.yamlMode"
-            value="toProperties"
-            class="mode-radio"
-          />
+      <div class="mode-buttons">
+        <button
+          @click="setMode('toProperties')"
+          class="mode-btn"
+          :class="{ active: toolStore.yamlMode === 'toProperties' }"
+        >
+          <span class="mode-icon">📤</span>
           YAML → Properties
-        </label>
-        <label class="mode-label">
-          <input type="radio" v-model="toolStore.yamlMode" value="toYaml" class="mode-radio" />
-          Properties → YAML
-        </label>
-      </div>
-
-      <div class="tool-group">
-        <button @click="convert" class="tool-btn primary" :disabled="!toolStore.yamlInput.trim()">
-          转换
         </button>
-        <button @click="clearAll" class="tool-btn danger">清空</button>
+        <button
+          @click="setMode('toYaml')"
+          class="mode-btn"
+          :class="{ active: toolStore.yamlMode === 'toYaml' }"
+        >
+          <span class="mode-icon">📣</span>
+          Properties → YAML
+        </button>
       </div>
     </div>
 
@@ -38,6 +34,22 @@
           :show-clear="true"
           :show-copy="true"
         />
+      </div>
+
+      <!-- 操作按钮区域 -->
+      <div class="operation-buttons">
+        <button
+          @click="convert"
+          class="btn btn-primary operation-btn"
+          :disabled="!toolStore.yamlInput.trim()"
+        >
+          <span class="btn-icon">🔄</span>
+          转换
+        </button>
+        <button @click="clearAll" class="btn btn-error operation-btn">
+          <span class="btn-icon">🗑️</span>
+          清空
+        </button>
       </div>
 
       <div class="editor-section">
@@ -154,6 +166,12 @@ const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info'
   }, 3000)
 }
 
+// 设置转换模式
+const setMode = (mode: 'toProperties' | 'toYaml') => {
+  toolStore.yamlMode = mode
+  showStatus(`转换模式: ${mode === 'toProperties' ? 'YAML → Properties' : 'Properties → YAML'}`, 'info')
+}
+
 // 转换功能
 const convert = () => {
   try {
@@ -183,13 +201,13 @@ const clearAll = () => {
 // 加载示例
 const loadYamlExample = () => {
   toolStore.yamlInput = yamlExample
-  toolStore.yamlMode = 'toProperties'
+  setMode('toProperties')
   showStatus('已加载YAML示例', 'info')
 }
 
 const loadPropertiesExample = () => {
   toolStore.yamlInput = propertiesExample
-  toolStore.yamlMode = 'toYaml'
+  setMode('toYaml')
   showStatus('已加载Properties示例', 'info')
 }
 </script>
@@ -197,10 +215,7 @@ const loadPropertiesExample = () => {
 <style scoped>
 .yaml-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
+  justify-content: center;
   margin-bottom: 1.5rem;
   padding: 1rem;
   background-color: var(--color-background-soft);
@@ -208,72 +223,88 @@ const loadPropertiesExample = () => {
   border: 1px solid var(--color-border);
 }
 
-.tool-group {
+.mode-buttons {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
+  background-color: var(--color-background-mute);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
 }
 
-.mode-label {
+.mode-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background-color: transparent;
+  color: var(--color-text);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
-  color: var(--color-text);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.mode-radio {
-  cursor: pointer;
+.mode-btn:hover {
+  background-color: var(--color-background-soft);
+  color: var(--color-text-active);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.tool-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.tool-btn:hover:not(:disabled) {
-  background-color: var(--color-background-mute);
-  border-color: var(--color-border-hover);
-}
-
-.tool-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tool-btn.primary {
-  background-color: var(--vt-c-green);
+.mode-btn.active {
+  background-color: var(--color-primary);
   color: white;
-  border-color: var(--vt-c-green);
+  box-shadow: var(--shadow-md);
 }
 
-.tool-btn.primary:hover:not(:disabled) {
-  background-color: #369870;
+.mode-btn.active:hover {
+  background-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
-.tool-btn.danger {
-  background-color: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
-.tool-btn.danger:hover:not(:disabled) {
-  background-color: #c82333;
+.mode-icon {
+  font-size: 1rem;
 }
 
 .editor-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 1.5rem;
   height: 500px;
   margin-bottom: 2rem;
+  align-items: center;
+}
+
+.operation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem;
+  align-items: center;
+}
+
+.operation-btn {
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.operation-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.operation-btn .btn-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
 }
 
 .editor-section {
@@ -360,18 +391,36 @@ const loadPropertiesExample = () => {
 }
 
 @media (max-width: 768px) {
-  .editor-layout,
+  .editor-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 1rem;
+  }
+
+  .operation-buttons {
+    order: -1;
+    flex-direction: row;
+    justify-content: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1rem;
+  }
+
+  .mode-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mode-btn {
+    justify-content: center;
+  }
+
   .examples-grid {
     grid-template-columns: 1fr;
   }
 
   .yaml-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tool-group {
-    justify-content: center;
+    padding: 0.75rem;
   }
 }
 </style>
