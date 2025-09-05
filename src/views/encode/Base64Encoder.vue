@@ -3,35 +3,6 @@
     <!-- 操作工具栏 -->
     <div class="encode-toolbar">
       <div class="tool-group">
-        <label class="mode-label">
-          <input
-            type="radio"
-            v-model="toolStore.base64EncodeMode"
-            value="encode"
-            class="mode-radio"
-          />
-          Base64 编码
-        </label>
-        <label class="mode-label">
-          <input
-            type="radio"
-            v-model="toolStore.base64EncodeMode"
-            value="decode"
-            class="mode-radio"
-          />
-          Base64 解码
-        </label>
-      </div>
-
-      <div class="tool-group">
-        <button
-          @click="processText"
-          class="btn btn-primary"
-          :disabled="!toolStore.base64EncodeInput.trim()"
-        >
-          <span class="btn-icon">🔄</span>
-          {{ processButtonText }}
-        </button>
         <button @click="clearAll" class="btn btn-error">
           <span class="btn-icon">🗑️</span>
           清空
@@ -45,19 +16,39 @@
         <CodeEditor
           v-model="toolStore.base64EncodeInput"
           language="text"
-          :title="inputTitle"
-          :placeholder="inputPlaceholder"
+          title="原始文本"
+          placeholder="请输入需要编码的文本..."
           height="400px"
           :show-clear="true"
           :show-copy="true"
         />
       </div>
 
+      <!-- 操作按钮区域 -->
+      <div class="operation-buttons">
+        <button
+          @click="encodeText"
+          class="btn btn-primary operation-btn"
+          :disabled="!toolStore.base64EncodeInput.trim()"
+        >
+          <span class="btn-icon">→</span>
+          Base64编码
+        </button>
+        <button
+          @click="decodeText"
+          class="btn btn-secondary operation-btn"
+          :disabled="!toolStore.base64EncodeInput.trim()"
+        >
+          <span class="btn-icon">←</span>
+          Base64解码
+        </button>
+      </div>
+
       <div class="editor-section">
         <CodeEditor
           v-model="toolStore.base64EncodeOutput"
           language="text"
-          :title="outputTitle"
+          title="处理结果"
           height="400px"
           :readonly="true"
           :show-clear="false"
@@ -159,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import ToolPanel from '@/components/ToolPanel.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { useToolStore } from '@/stores/tool'
@@ -168,25 +159,6 @@ import { base64Encode, base64Decode } from '@/utils'
 const toolStore = useToolStore()
 const statusMessage = ref('')
 const statusType = ref<'success' | 'error' | 'info'>('info')
-
-// 计算属性
-const processButtonText = computed(() => {
-  return toolStore.base64EncodeMode === 'encode' ? 'Base64编码' : 'Base64解码'
-})
-
-const inputTitle = computed(() => {
-  return toolStore.base64EncodeMode === 'encode' ? '原始文本' : 'Base64编码文本'
-})
-
-const outputTitle = computed(() => {
-  return toolStore.base64EncodeMode === 'encode' ? 'Base64编码结果' : '解码结果'
-})
-
-const inputPlaceholder = computed(() => {
-  return toolStore.base64EncodeMode === 'encode'
-    ? '请输入需要编码的文本...'
-    : '请输入需要解码的Base64文本...'
-})
 
 // 示例数据
 const textExample = '你好，世界！Hello, World!'
@@ -203,22 +175,25 @@ const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info'
   }, 3000)
 }
 
-// 处理文本
-const processText = () => {
+// Base64编码
+const encodeText = () => {
   try {
-    let result = ''
-
-    if (toolStore.base64EncodeMode === 'encode') {
-      result = base64Encode(toolStore.base64EncodeInput)
-      showStatus('Base64编码成功', 'success')
-    } else {
-      result = base64Decode(toolStore.base64EncodeInput)
-      showStatus('Base64解码成功', 'success')
-    }
-
+    const result = base64Encode(toolStore.base64EncodeInput)
     toolStore.base64EncodeOutput = result
+    showStatus('Base64编码成功', 'success')
   } catch (error) {
-    showStatus('处理失败：' + (error as Error).message, 'error')
+    showStatus('编码失败：' + (error as Error).message, 'error')
+  }
+}
+
+// Base64解码
+const decodeText = () => {
+  try {
+    const result = base64Decode(toolStore.base64EncodeInput)
+    toolStore.base64EncodeOutput = result
+    showStatus('Base64解码成功', 'success')
+  } catch (error) {
+    showStatus('解码失败：' + (error as Error).message, 'error')
   }
 }
 
@@ -232,13 +207,11 @@ const clearAll = () => {
 // 加载示例
 const loadTextExample = () => {
   toolStore.base64EncodeInput = textExample
-  toolStore.base64EncodeMode = 'encode'
   showStatus('已加载文本编码示例', 'info')
 }
 
 const loadJsonExample = () => {
   toolStore.base64EncodeInput = jsonExample
-  toolStore.base64EncodeMode = 'encode'
   showStatus('已加载JSON编码示例', 'info')
 }
 </script>
@@ -264,26 +237,40 @@ const loadJsonExample = () => {
   flex-wrap: wrap;
 }
 
-.mode-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: var(--color-text);
-  white-space: nowrap;
-}
-
-.mode-radio {
-  cursor: pointer;
-}
-
 .editor-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 1.5rem;
   height: 400px;
   margin-bottom: 2rem;
+  align-items: center;
+}
+
+.operation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem;
+  align-items: center;
+}
+
+.operation-btn {
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.operation-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.operation-btn .btn-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
 }
 
 .editor-section {
@@ -403,7 +390,21 @@ const loadJsonExample = () => {
 }
 
 @media (max-width: 768px) {
-  .editor-layout,
+  .editor-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 1rem;
+  }
+
+  .operation-buttons {
+    order: -1;
+    flex-direction: row;
+    justify-content: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1rem;
+  }
+
   .examples-grid {
     grid-template-columns: 1fr;
   }

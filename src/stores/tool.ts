@@ -20,12 +20,10 @@ export const useToolStore = defineStore('tool', () => {
   // URL编码工具相关状态
   const urlEncodeInput = ref('')
   const urlEncodeOutput = ref('')
-  const urlEncodeMode = ref<'encode' | 'decode'>('encode')
 
   // Base64编码工具相关状态
   const base64EncodeInput = ref('')
   const base64EncodeOutput = ref('')
-  const base64EncodeMode = ref<'encode' | 'decode'>('encode')
 
   // 正则工具相关状态
   const regexPattern = ref('')
@@ -69,12 +67,10 @@ export const useToolStore = defineStore('tool', () => {
     // URL编码
     urlEncodeInput,
     urlEncodeOutput,
-    urlEncodeMode,
 
     // Base64编码
     base64EncodeInput,
     base64EncodeOutput,
-    base64EncodeMode,
 
     // Regex
     regexPattern,
