@@ -169,7 +169,10 @@ const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info'
 // 设置转换模式
 const setMode = (mode: 'toProperties' | 'toYaml') => {
   toolStore.yamlMode = mode
-  showStatus(`转换模式: ${mode === 'toProperties' ? 'YAML → Properties' : 'Properties → YAML'}`, 'info')
+  showStatus(
+    `转换模式: ${mode === 'toProperties' ? 'YAML → Properties' : 'Properties → YAML'}`,
+    'info',
+  )
 }
 
 // 转换功能

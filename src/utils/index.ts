@@ -50,6 +50,64 @@ export const isValidJson = (jsonString: string): boolean => {
 }
 
 /**
+ * 获取JSON验证的详细错误信息
+ */
+export const validateJsonWithDetails = (
+  jsonString: string,
+): { isValid: boolean; error?: string } => {
+  if (!jsonString.trim()) {
+    return { isValid: false, error: '输入不能为空' }
+  }
+
+  try {
+    JSON.parse(jsonString)
+    return { isValid: true }
+  } catch (error) {
+    const errorMessage = (error as Error).message
+
+    // 解析常见的JSON错误类型
+    if (errorMessage.includes('Unexpected token')) {
+      const match = errorMessage.match(/Unexpected token (.) in JSON at position (\d+)/)
+      if (match) {
+        const [, token, position] = match
+        const pos = parseInt(position, 10)
+        const lineInfo = getLineAndColumn(jsonString, pos)
+        return {
+          isValid: false,
+          error: `第 ${lineInfo.line} 行第 ${lineInfo.column} 列：意外的字符 '${token}'`,
+        }
+      }
+    }
+
+    if (errorMessage.includes('Unexpected end of JSON input')) {
+      return { isValid: false, error: 'JSON结构不完整，缺少结束符号' }
+    }
+
+    if (errorMessage.includes('Unterminated string')) {
+      return { isValid: false, error: '字符串未正确结束，缺少引号' }
+    }
+
+    if (errorMessage.includes('Expected property name')) {
+      return { isValid: false, error: '缺少属性名或属性名格式错误' }
+    }
+
+    // 返回原始错误信息
+    return { isValid: false, error: errorMessage }
+  }
+}
+
+/**
+ * 获取指定位置的行号和列号
+ */
+const getLineAndColumn = (text: string, position: number): { line: number; column: number } => {
+  const lines = text.slice(0, position).split('\n')
+  return {
+    line: lines.length,
+    column: lines[lines.length - 1].length + 1,
+  }
+}
+
+/**
  * URL编码
  */
 export const urlEncode = (text: string): string => {

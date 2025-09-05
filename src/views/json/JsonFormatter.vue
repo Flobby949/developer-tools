@@ -1,34 +1,5 @@
 <template>
   <ToolPanel title="JSON格式化工具" description="提供JSON格式化、压缩和验证功能">
-    <!-- 操作工具栏 -->
-    <div class="json-toolbar">
-      <div class="tool-group">
-        <button
-          @click="formatJson"
-          class="btn btn-primary"
-          :disabled="!toolStore.jsonFormatterInput.trim()"
-        >
-          <span class="btn-icon">✨</span>
-          格式化
-        </button>
-        <button @click="compressJson" class="btn" :disabled="!toolStore.jsonFormatterInput.trim()">
-          <span class="btn-icon">🗄</span>
-          压缩
-        </button>
-        <button @click="validateJson" class="btn" :disabled="!toolStore.jsonFormatterInput.trim()">
-          <span class="btn-icon">✓</span>
-          验证
-        </button>
-      </div>
-
-      <div class="tool-group">
-        <button @click="clearAll" class="btn btn-error">
-          <span class="btn-icon">🗑️</span>
-          清空
-        </button>
-      </div>
-    </div>
-
     <!-- 编辑器区域 -->
     <div class="editor-layout">
       <div class="editor-section">
@@ -41,6 +12,38 @@
           :show-clear="true"
           :show-copy="true"
         />
+      </div>
+
+      <!-- 操作按钮区域 -->
+      <div class="operation-buttons">
+        <button
+          @click="formatJson"
+          class="btn btn-primary operation-btn"
+          :disabled="!toolStore.jsonFormatterInput.trim()"
+        >
+          <span class="btn-icon">✨</span>
+          格式化
+        </button>
+        <button
+          @click="compressJson"
+          class="btn btn-secondary operation-btn"
+          :disabled="!toolStore.jsonFormatterInput.trim()"
+        >
+          <span class="btn-icon">🗄</span>
+          压缩
+        </button>
+        <button
+          @click="validateJson"
+          class="btn btn-info operation-btn"
+          :disabled="!toolStore.jsonFormatterInput.trim()"
+        >
+          <span class="btn-icon">✓</span>
+          验证
+        </button>
+        <button @click="clearAll" class="btn btn-error operation-btn">
+          <span class="btn-icon">🗑️</span>
+          清空
+        </button>
       </div>
 
       <div class="editor-section">
@@ -82,6 +85,15 @@
           </div>
           <button @click="loadComplexExample" class="example-btn">使用此示例</button>
         </div>
+
+        <div class="example-card">
+          <h4>错误格式示例</h4>
+          <div class="example-item">
+            <span class="example-label">错误格式：</span>
+            <code class="example-text">{"name": "张三", "age": 30,}</code>
+          </div>
+          <button @click="loadErrorExample" class="example-btn">使用此示例</button>
+        </div>
       </div>
     </div>
 
@@ -114,7 +126,7 @@ import { useToolStore } from '@/stores/tool'
 import {
   formatJson as formatJsonUtil,
   compressJson as compressJsonUtil,
-  isValidJson,
+  validateJsonWithDetails,
 } from '@/utils'
 
 const toolStore = useToolStore()
@@ -122,9 +134,10 @@ const statusMessage = ref('')
 const statusType = ref<'success' | 'error' | 'info'>('info')
 
 // 示例数据
-const simpleExample = '{"name":"张三","age":30,"city":"北京","isActive":true}'
+const simpleExample = '{"name":"张三","age":30,"city": "北京","isActive":true}'
 const complexExample =
   '[{"id":1,"name":"用户1","roles":["admin","user"]},{"id":2,"name":"用户2","roles":["user"]}]'
+const errorExample = '{"name": "张三", "age": 30,}'
 
 // 显示状态消息
 const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -161,10 +174,11 @@ const compressJson = () => {
 
 // 验证JSON
 const validateJson = () => {
-  if (isValidJson(toolStore.jsonFormatterInput)) {
-    showStatus('JSON格式正确', 'success')
+  const result = validateJsonWithDetails(toolStore.jsonFormatterInput)
+  if (result.isValid) {
+    showStatus('✓ JSON格式正确', 'success')
   } else {
-    showStatus('JSON格式错误', 'error')
+    showStatus(`✗ JSON验证失败：${result.error}`, 'error')
   }
 }
 
@@ -185,32 +199,49 @@ const loadComplexExample = () => {
   toolStore.jsonFormatterInput = complexExample
   showStatus('已加载复杂JSON示例', 'info')
 }
+
+const loadErrorExample = () => {
+  toolStore.jsonFormatterInput = errorExample
+  showStatus('已加载错误格式JSON示例，请点击验证查看错误信息', 'info')
+}
 </script>
 
 <style scoped>
-.json-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: var(--color-background-soft);
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-}
-
-.tool-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .editor-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 1.5rem;
   height: 500px;
   margin-bottom: 2rem;
+  align-items: center;
+}
+
+.operation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  align-items: center;
+}
+
+.operation-btn {
+  min-width: 100px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
+}
+
+.operation-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.operation-btn .btn-icon {
+  font-size: 1rem;
+  margin-right: 0.5rem;
 }
 
 .editor-section {
@@ -231,7 +262,7 @@ const loadComplexExample = () => {
 .examples-grid,
 .info-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
@@ -300,18 +331,30 @@ const loadComplexExample = () => {
 }
 
 @media (max-width: 768px) {
-  .editor-layout,
+  .editor-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 1rem;
+  }
+
+  .operation-buttons {
+    order: -1;
+    flex-direction: row;
+    justify-content: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .operation-btn {
+    min-width: 80px;
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+  }
+
   .examples-grid {
     grid-template-columns: 1fr;
-  }
-
-  .json-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tool-group {
-    justify-content: center;
   }
 }
 </style>
