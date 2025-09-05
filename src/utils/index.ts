@@ -20,7 +20,7 @@ export const formatJson = (jsonString: string, indent: number = 2): string => {
   try {
     const parsed = JSON.parse(jsonString)
     return JSON.stringify(parsed, null, indent)
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }
@@ -32,7 +32,7 @@ export const compressJson = (jsonString: string): string => {
   try {
     const parsed = JSON.parse(jsonString)
     return JSON.stringify(parsed)
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }
@@ -62,7 +62,7 @@ export const urlEncode = (text: string): string => {
 export const urlDecode = (text: string): string => {
   try {
     return decodeURIComponent(text)
-  } catch (error) {
+  } catch {
     throw new Error('Invalid URL encoded string')
   }
 }
@@ -80,7 +80,7 @@ export const base64Encode = (text: string): string => {
 export const base64Decode = (text: string): string => {
   try {
     return decodeURIComponent(escape(atob(text)))
-  } catch (error) {
+  } catch {
     throw new Error('Invalid Base64 string')
   }
 }
@@ -88,7 +88,7 @@ export const base64Decode = (text: string): string => {
 /**
  * 防抖函数
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
 ): ((...args: Parameters<T>) => void) => {

@@ -1,6 +1,7 @@
 {
-  "name": "package.json",
-  "version": "0.0.0",
+  "name": "program-tool",
+  "version": "1.0.0",
+  "description": "开发者工具集 - 一个集成化的在线工具平台，为开发人员提供常用的代码工具和转换功能",
   "private": true,
   "type": "module",
   "engines": {

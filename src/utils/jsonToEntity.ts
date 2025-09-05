@@ -1,18 +1,9 @@
 // JSON转实体类工具
 
 /**
- * 获取JavaScript类型
- */
-const getJsType = (value: any): string => {
-  if (value === null) return 'null'
-  if (Array.isArray(value)) return 'array'
-  return typeof value
-}
-
-/**
  * 获取Java类型
  */
-const getJavaType = (value: any): string => {
+const getJavaType = (value: unknown): string => {
   if (value === null) return 'Object'
   if (typeof value === 'string') return 'String'
   if (typeof value === 'number') {
@@ -33,7 +24,7 @@ const getJavaType = (value: any): string => {
 /**
  * 获取TypeScript类型
  */
-const getTypeScriptType = (value: any): string => {
+const getTypeScriptType = (value: unknown): string => {
   if (value === null) return 'any'
   if (typeof value === 'string') return 'string'
   if (typeof value === 'number') return 'number'
@@ -98,7 +89,7 @@ export const jsonToJava = (jsonString: string, className: string = 'Entity'): st
     result += '}'
 
     return result
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }
@@ -120,7 +111,7 @@ export const jsonToTypeScript = (jsonString: string, interfaceName: string = 'En
     result += '}'
 
     return result
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }
@@ -148,7 +139,7 @@ export const jsonToCSharp = (jsonString: string, className: string = 'Entity'): 
     result += '}'
 
     return result
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }
@@ -163,13 +154,13 @@ export const jsonToPython = (jsonString: string, className: string = 'Entity'): 
     let result = `class ${className}:\n`
     result += `    def __init__(self):\n`
 
-    for (const [key, value] of Object.entries(obj)) {
+    for (const [key] of Object.entries(obj)) {
       const fieldName = key.toLowerCase()
       result += `        self.${fieldName} = None\n`
     }
 
     return result
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format')
   }
 }

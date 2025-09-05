@@ -6,9 +6,9 @@ import * as yaml from 'js-yaml'
  */
 export const yamlToProperties = (yamlString: string): string => {
   try {
-    const obj = yaml.load(yamlString) as Record<string, any>
+    const obj = yaml.load(yamlString) as Record<string, unknown>
     return objectToProperties(obj)
-  } catch (error) {
+  } catch {
     throw new Error('Invalid YAML format')
   }
 }
@@ -20,7 +20,7 @@ export const propertiesToYaml = (propertiesString: string): string => {
   try {
     const obj = propertiesToObject(propertiesString)
     return yaml.dump(obj, { indent: 2 })
-  } catch (error) {
+  } catch {
     throw new Error('Invalid Properties format')
   }
 }
@@ -28,14 +28,14 @@ export const propertiesToYaml = (propertiesString: string): string => {
 /**
  * 对象转Properties格式
  */
-const objectToProperties = (obj: Record<string, any>, prefix: string = ''): string => {
+const objectToProperties = (obj: Record<string, unknown>, prefix: string = ''): string => {
   let result = ''
 
   for (const [key, value] of Object.entries(obj)) {
     const fullKey = prefix ? `${prefix}.${key}` : key
 
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      result += objectToProperties(value, fullKey)
+      result += objectToProperties(value as Record<string, unknown>, fullKey)
     } else {
       result += `${fullKey}=${value}\n`
     }
@@ -47,8 +47,8 @@ const objectToProperties = (obj: Record<string, any>, prefix: string = ''): stri
 /**
  * Properties字符串转对象
  */
-const propertiesToObject = (propertiesString: string): Record<string, any> => {
-  const result: Record<string, any> = {}
+const propertiesToObject = (propertiesString: string): Record<string, unknown> => {
+  const result: Record<string, unknown> = {}
   const lines = propertiesString.trim().split('\n')
 
   for (const line of lines) {
@@ -70,7 +70,7 @@ const propertiesToObject = (propertiesString: string): Record<string, any> => {
 /**
  * 设置嵌套属性
  */
-const setNestedProperty = (obj: Record<string, any>, key: string, value: string): void => {
+const setNestedProperty = (obj: Record<string, unknown>, key: string, value: string): void => {
   const keys = key.split('.')
   let current = obj
 
@@ -79,7 +79,7 @@ const setNestedProperty = (obj: Record<string, any>, key: string, value: string)
     if (!(k in current) || typeof current[k] !== 'object') {
       current[k] = {}
     }
-    current = current[k]
+    current = current[k] as Record<string, unknown>
   }
 
   const lastKey = keys[keys.length - 1]
@@ -89,7 +89,7 @@ const setNestedProperty = (obj: Record<string, any>, key: string, value: string)
 /**
  * 解析值类型
  */
-const parseValue = (value: string): any => {
+const parseValue = (value: string): unknown => {
   // 尝试解析为数字
   if (/^\d+$/.test(value)) {
     return parseInt(value, 10)
