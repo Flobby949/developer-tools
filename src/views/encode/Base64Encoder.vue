@@ -50,7 +50,6 @@
           language="text"
           title="处理结果"
           height="400px"
-          :readonly="true"
           :show-clear="false"
           :show-copy="true"
         />

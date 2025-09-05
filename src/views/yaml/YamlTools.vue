@@ -58,7 +58,6 @@
           :language="outputLanguage"
           :title="outputTitle"
           height="500px"
-          :readonly="true"
           :show-clear="false"
           :show-copy="true"
         />

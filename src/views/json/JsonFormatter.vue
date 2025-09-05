@@ -52,7 +52,6 @@
           language="json"
           title="格式化结果"
           height="500px"
-          :readonly="true"
           :show-clear="false"
           :show-copy="true"
         />

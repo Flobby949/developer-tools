@@ -52,7 +52,6 @@
           :language="outputLanguage"
           title="实体类代码"
           height="500px"
-          :readonly="true"
           :show-clear="false"
           :show-copy="true"
         />

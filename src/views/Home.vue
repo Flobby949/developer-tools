@@ -5,7 +5,12 @@
       <div class="header-content">
         <h1 class="site-title">开发者工具集</h1>
         <div class="header-actions">
-          <a href="https://github.com" target="_blank" class="github-link" title="查看源码">
+          <a
+            href="https://github.com/Flobby949/developer-tools"
+            target="_blank"
+            class="github-link"
+            title="查看源码"
+          >
             <span class="github-icon">⭐</span>
             GitHub
           </a>
