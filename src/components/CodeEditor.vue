@@ -31,6 +31,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as monaco from 'monaco-editor'
 import { copyToClipboard } from '@/utils'
+import { useAppStore } from '@/stores/app'
 
 interface Props {
   modelValue: string
@@ -62,6 +63,7 @@ const emit = defineEmits<{
 const editorContainer = ref<HTMLDivElement>()
 const copyText = ref('复制')
 const copyIcon = ref('📋')
+const appStore = useAppStore()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 
 onMounted(async () => {
@@ -70,7 +72,7 @@ onMounted(async () => {
     editor = monaco.editor.create(editorContainer.value, {
       value: props.modelValue,
       language: props.language,
-      theme: 'vs',
+      theme: appStore.theme === 'dark' ? 'vs-dark' : 'vs',
       automaticLayout: true,
       readOnly: props.readonly,
       minimap: { enabled: false },
@@ -116,6 +118,16 @@ watch(
       if (model) {
         monaco.editor.setModelLanguage(model, newLanguage)
       }
+    }
+  },
+)
+
+// 监听主题变化
+watch(
+  () => appStore.theme,
+  (newTheme) => {
+    if (editor) {
+      monaco.editor.setTheme(newTheme === 'dark' ? 'vs-dark' : 'vs')
     }
   },
 )
