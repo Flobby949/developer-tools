@@ -1,21 +1,35 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: '/json',
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/json',
+      name: 'json',
+      component: () => import('../views/json/JsonTools.vue'),
+      meta: { title: 'JSON工具' },
+    },
+    {
+      path: '/yaml',
+      name: 'yaml',
+      component: () => import('../views/yaml/YamlTools.vue'),
+      meta: { title: 'YAML工具' },
+    },
+    {
+      path: '/encode',
+      name: 'encode',
+      component: () => import('../views/encode/EncodeTools.vue'),
+      meta: { title: '编码转换' },
+    },
+    {
+      path: '/regex',
+      name: 'regex',
+      component: () => import('../views/regex/RegexTools.vue'),
+      meta: { title: '正则表达式' },
     },
   ],
 })
