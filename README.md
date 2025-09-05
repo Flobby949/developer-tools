@@ -1,75 +1,39 @@
-# 开发者工具集
+# .
 
-一个集成化的在线工具平台，为开发人员提供常用的代码工具和转换功能。
+This template should help get you started developing with Vue 3 in Vite.
 
-## 功能特性
+## Recommended IDE Setup
 
-### JSON工具
-- JSON格式化 - 将JSON字符串格式化为易读的格式，支持自定义缩进
-- JSON压缩 - 去除JSON中的空白字符，压缩为一行
-- JSON转实体类 - 将JSON转换为多种编程语言的实体类定义
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-### YAML工具
-- YAML与Properties互转 - 在YAML格式和Java Properties格式之间转换
+## Type Support for `.vue` Imports in TS
 
-### 编码转换
-- URL编码/解码 - 对URL进行编码和解码操作
-- Base64编码/解码 - 对文本进行Base64编码和解码
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-### 其他工具
-- 正则表达式测试 - 在线测试和调试正则表达式，支持实时匹配和高亮显示
+## Customize configuration
 
-## 技术栈
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-- Vue 3 + TypeScript
-- Vue Router 4
-- Pinia (状态管理)
-- Vite (构建工具)
-- Monaco Editor (代码编辑器)
+## Project Setup
 
-## 项目结构
-
-```
-src/
-├── assets/          # 静态资源
-├── components/      # 公共组件
-├── router/          # 路由配置
-├── stores/          # 状态管理
-├── types/           # TypeScript类型定义
-├── utils/           # 工具函数
-├── views/           # 页面组件
-│   ├── encode/      # 编码转换页面
-│   ├── json/        # JSON工具页面
-│   ├── regex/       # 正则测试页面
-│   └── yaml/        # YAML工具页面
-├── App.vue          # 根组件
-└── main.ts          # 入口文件
-```
-
-## 开发环境设置
-
-1. 安装依赖
-```bash
+```sh
 npm install
 ```
 
-2. 启动开发服务器
-```bash
+### Compile and Hot-Reload for Development
+
+```sh
 npm run dev
 ```
 
-3. 构建生产版本
-```bash
+### Type-Check, Compile and Minify for Production
+
+```sh
 npm run build
 ```
 
-## 浏览器支持
+### Lint with [ESLint](https://eslint.org/)
 
-- Chrome (推荐)
-- Firefox
-- Safari
-- Edge
-
-## 贡献
-
-欢迎提交Issue和Pull Request来改进这个项目。
+```sh
+npm run lint
+```
