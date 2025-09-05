@@ -3,9 +3,23 @@
     <div class="editor-header" v-if="showHeader">
       <span class="editor-title">{{ title }}</span>
       <div class="editor-actions">
-        <button v-if="showCopy" @click="copyContent" class="action-btn" title="复制内容">📋</button>
-        <button v-if="showClear" @click="clearContent" class="action-btn" title="清空内容">
-          🗑️
+        <button
+          v-if="showCopy"
+          @click="copyContent"
+          class="action-btn action-btn-copy"
+          title="复制内容"
+        >
+          <span class="action-icon">{{ copyIcon }}</span>
+          <span class="action-text">{{ copyText }}</span>
+        </button>
+        <button
+          v-if="showClear"
+          @click="clearContent"
+          class="action-btn action-btn-clear"
+          title="清空内容"
+        >
+          <span class="action-icon">🗑️</span>
+          <span class="action-text">清空</span>
         </button>
       </div>
     </div>
@@ -46,6 +60,8 @@ const emit = defineEmits<{
 }>()
 
 const editorContainer = ref<HTMLDivElement>()
+const copyText = ref('复制')
+const copyIcon = ref('📋')
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 
 onMounted(async () => {
@@ -110,7 +126,13 @@ const copyContent = async () => {
     const content = editor.getValue()
     const success = await copyToClipboard(content)
     if (success) {
-      // 可以添加提示消息
+      // 显示复制成功状态
+      copyText.value = '已复制'
+      copyIcon.value = '✓'
+      setTimeout(() => {
+        copyText.value = '复制'
+        copyIcon.value = '📋'
+      }, 1500)
     }
   }
 }
@@ -173,25 +195,81 @@ defineExpose({
 
 .editor-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .action-btn {
-  background: none;
-  border: none;
-  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: var(--radius);
   font-size: 0.875rem;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--color-text);
 }
 
 .action-btn:hover {
   background-color: var(--color-background-mute);
+  border-color: var(--color-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-btn-copy {
+  color: var(--color-primary);
+}
+
+.action-btn-copy:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.action-btn-clear {
+  color: var(--vt-c-red);
+}
+
+.action-btn-clear:hover {
+  background-color: #ef444415;
+  border-color: var(--vt-c-red);
+}
+
+.action-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.action-text {
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .editor-container {
   height: v-bind(height);
   width: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .action-btn {
+    padding: 0.5rem;
+    min-width: 2.5rem;
+  }
+
+  .action-text {
+    display: none;
+  }
+
+  .action-icon {
+    font-size: 1.1rem;
+  }
+
+  .editor-actions {
+    gap: 0.5rem;
+  }
 }
 </style>
