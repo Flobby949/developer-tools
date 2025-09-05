@@ -1,45 +1,31 @@
 <template>
-  <ToolPanel title="编码转换" description="提供URL编码/解码和Base64编码/解码功能">
+  <ToolPanel title="URL编解码" description="提供URL编码和解码功能，处理特殊字符和中文字符">
     <!-- 操作工具栏 -->
     <div class="encode-toolbar">
       <div class="tool-group">
         <label class="mode-label">
-          <input type="radio" v-model="toolStore.encodeMode" value="urlEncode" class="mode-radio" />
+          <input type="radio" v-model="toolStore.urlEncodeMode" value="encode" class="mode-radio" />
           URL 编码
         </label>
         <label class="mode-label">
-          <input type="radio" v-model="toolStore.encodeMode" value="urlDecode" class="mode-radio" />
+          <input type="radio" v-model="toolStore.urlEncodeMode" value="decode" class="mode-radio" />
           URL 解码
-        </label>
-        <label class="mode-label">
-          <input
-            type="radio"
-            v-model="toolStore.encodeMode"
-            value="base64Encode"
-            class="mode-radio"
-          />
-          Base64 编码
-        </label>
-        <label class="mode-label">
-          <input
-            type="radio"
-            v-model="toolStore.encodeMode"
-            value="base64Decode"
-            class="mode-radio"
-          />
-          Base64 解码
         </label>
       </div>
 
       <div class="tool-group">
         <button
           @click="processText"
-          class="tool-btn primary"
-          :disabled="!toolStore.encodeInput.trim()"
+          class="btn btn-primary"
+          :disabled="!toolStore.urlEncodeInput.trim()"
         >
+          <span class="btn-icon">🔄</span>
           {{ processButtonText }}
         </button>
-        <button @click="clearAll" class="tool-btn danger">清空</button>
+        <button @click="clearAll" class="btn btn-error">
+          <span class="btn-icon">🗑️</span>
+          清空
+        </button>
       </div>
     </div>
 
@@ -47,7 +33,7 @@
     <div class="editor-layout">
       <div class="editor-section">
         <CodeEditor
-          v-model="toolStore.encodeInput"
+          v-model="toolStore.urlEncodeInput"
           language="text"
           :title="inputTitle"
           :placeholder="inputPlaceholder"
@@ -59,7 +45,7 @@
 
       <div class="editor-section">
         <CodeEditor
-          v-model="toolStore.encodeOutput"
+          v-model="toolStore.urlEncodeOutput"
           language="text"
           :title="outputTitle"
           height="400px"
@@ -71,7 +57,7 @@
     </div>
 
     <!-- 状态信息 -->
-    <div v-if="statusMessage" class="status-message" :class="statusType">
+    <div v-if="statusMessage" class="alert" :class="`alert-${statusType}`">
       {{ statusMessage }}
     </div>
 
@@ -80,7 +66,7 @@
       <h3>示例</h3>
       <div class="examples-grid">
         <div class="example-card">
-          <h4>URL 编码示例</h4>
+          <h4>URL参数编码</h4>
           <div class="example-item">
             <span class="example-label">原文：</span>
             <code class="example-text">https://example.com/search?q=中文检索&type=1</code>
@@ -95,16 +81,18 @@
         </div>
 
         <div class="example-card">
-          <h4>Base64 编码示例</h4>
+          <h4>特殊字符编码</h4>
           <div class="example-item">
             <span class="example-label">原文：</span>
-            <code class="example-text">你好，世界！Hello, World!</code>
+            <code class="example-text">name=张三&age=25&email=user@example.com</code>
           </div>
           <div class="example-item">
             <span class="example-label">编码：</span>
-            <code class="example-text">5L2g5aW977yM5LiW55WM77yBSGVsbG8sIFdvcmxkIQ==</code>
+            <code class="example-text"
+              >name=%E5%BC%A0%E4%B8%89&age=25&email=user%40example.com</code
+            >
           </div>
-          <button @click="loadBase64Example" class="example-btn">使用此示例</button>
+          <button @click="loadParamsExample" class="example-btn">使用此示例</button>
         </div>
       </div>
     </div>
@@ -114,16 +102,38 @@
       <h3>功能说明</h3>
       <div class="info-grid">
         <div class="info-card">
-          <h4>URL 编码/解码</h4>
+          <h4>URL编码</h4>
           <p>
-            URL编码用于将特殊字符和非英文字符转换为可在URL中传输的格式。常用于处理网址参数和表单数据。
+            将特殊字符和非ASCII字符转换为%XX格式的编码。常用于URL参数传递，确保数据在HTTP传输中的正确性。
           </p>
+          <h5>常见编码字符：</h5>
+          <ul>
+            <li>空格 → %20</li>
+            <li>@ → %40</li>
+            <li>& → %26</li>
+            <li># → %23</li>
+            <li>中文字符 → UTF-8编码</li>
+          </ul>
         </div>
         <div class="info-card">
-          <h4>Base64 编码/解码</h4>
-          <p>
-            Base64编码用于将二进制数据转换为可打印的ASCII字符。常用于数据传输、图片嵌入和数据存储。
-          </p>
+          <h4>URL解码</h4>
+          <p>将%XX格式的编码字符还原为原始字符。用于解析URL参数或处理已编码的URL字符串。</p>
+          <h5>使用场景：</h5>
+          <ul>
+            <li>解析URL查询参数</li>
+            <li>处理表单数据</li>
+            <li>API参数解析</li>
+            <li>日志分析</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>注意事项</h4>
+          <ul>
+            <li>URL编码使用UTF-8字符集</li>
+            <li>某些字符在URL中有特殊含义，需要编码</li>
+            <li>完整URL编码与组件编码可能不同</li>
+            <li>重复编码可能导致错误</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -135,7 +145,7 @@ import { ref, computed } from 'vue'
 import ToolPanel from '@/components/ToolPanel.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { useToolStore } from '@/stores/tool'
-import { urlEncode, urlDecode, base64Encode, base64Decode } from '@/utils'
+import { urlEncode, urlDecode } from '@/utils'
 
 const toolStore = useToolStore()
 const statusMessage = ref('')
@@ -143,68 +153,26 @@ const statusType = ref<'success' | 'error' | 'info'>('info')
 
 // 计算属性
 const processButtonText = computed(() => {
-  switch (toolStore.encodeMode) {
-    case 'urlEncode':
-      return 'URL 编码'
-    case 'urlDecode':
-      return 'URL 解码'
-    case 'base64Encode':
-      return 'Base64 编码'
-    case 'base64Decode':
-      return 'Base64 解码'
-    default:
-      return '处理'
-  }
+  return toolStore.urlEncodeMode === 'encode' ? 'URL编码' : 'URL解码'
 })
 
 const inputTitle = computed(() => {
-  switch (toolStore.encodeMode) {
-    case 'urlEncode':
-      return '原始文本'
-    case 'urlDecode':
-      return 'URL编码文本'
-    case 'base64Encode':
-      return '原始文本'
-    case 'base64Decode':
-      return 'Base64编码文本'
-    default:
-      return '输入'
-  }
+  return toolStore.urlEncodeMode === 'encode' ? '原始文本' : 'URL编码文本'
 })
 
 const outputTitle = computed(() => {
-  switch (toolStore.encodeMode) {
-    case 'urlEncode':
-      return 'URL编码结果'
-    case 'urlDecode':
-      return '解码结果'
-    case 'base64Encode':
-      return 'Base64编码结果'
-    case 'base64Decode':
-      return '解码结果'
-    default:
-      return '输出'
-  }
+  return toolStore.urlEncodeMode === 'encode' ? 'URL编码结果' : '解码结果'
 })
 
 const inputPlaceholder = computed(() => {
-  switch (toolStore.encodeMode) {
-    case 'urlEncode':
-      return '请输入需要编码的文本...'
-    case 'urlDecode':
-      return '请输入需要解码的URL编码文本...'
-    case 'base64Encode':
-      return '请输入需要编码的文本...'
-    case 'base64Decode':
-      return '请输入需要解码的Base64文本...'
-    default:
-      return '请输入文本...'
-  }
+  return toolStore.urlEncodeMode === 'encode'
+    ? '请输入需要编码的文本...'
+    : '请输入需要解码的URL编码文本...'
 })
 
 // 示例数据
 const urlExample = 'https://example.com/search?q=中文检索&type=1'
-const base64Example = '你好，世界！Hello, World!'
+const paramsExample = 'name=张三&age=25&email=user@example.com'
 
 // 显示状态消息
 const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -222,28 +190,15 @@ const processText = () => {
   try {
     let result = ''
 
-    switch (toolStore.encodeMode) {
-      case 'urlEncode':
-        result = urlEncode(toolStore.encodeInput)
-        showStatus('URL编码成功', 'success')
-        break
-      case 'urlDecode':
-        result = urlDecode(toolStore.encodeInput)
-        showStatus('URL解码成功', 'success')
-        break
-      case 'base64Encode':
-        result = base64Encode(toolStore.encodeInput)
-        showStatus('Base64编码成功', 'success')
-        break
-      case 'base64Decode':
-        result = base64Decode(toolStore.encodeInput)
-        showStatus('Base64解码成功', 'success')
-        break
-      default:
-        throw new Error('未知的处理模式')
+    if (toolStore.urlEncodeMode === 'encode') {
+      result = urlEncode(toolStore.urlEncodeInput)
+      showStatus('URL编码成功', 'success')
+    } else {
+      result = urlDecode(toolStore.urlEncodeInput)
+      showStatus('URL解码成功', 'success')
     }
 
-    toolStore.encodeOutput = result
+    toolStore.urlEncodeOutput = result
   } catch (error) {
     showStatus('处理失败：' + (error as Error).message, 'error')
   }
@@ -251,22 +206,22 @@ const processText = () => {
 
 // 清空所有内容
 const clearAll = () => {
-  toolStore.encodeInput = ''
-  toolStore.encodeOutput = ''
+  toolStore.urlEncodeInput = ''
+  toolStore.urlEncodeOutput = ''
   showStatus('已清空所有内容', 'info')
 }
 
 // 加载示例
 const loadUrlExample = () => {
-  toolStore.encodeInput = urlExample
-  toolStore.encodeMode = 'urlEncode'
+  toolStore.urlEncodeInput = urlExample
+  toolStore.urlEncodeMode = 'encode'
   showStatus('已加载URL编码示例', 'info')
 }
 
-const loadBase64Example = () => {
-  toolStore.encodeInput = base64Example
-  toolStore.encodeMode = 'base64Encode'
-  showStatus('已加载Base64编码示例', 'info')
+const loadParamsExample = () => {
+  toolStore.urlEncodeInput = paramsExample
+  toolStore.urlEncodeMode = 'encode'
+  showStatus('已加载参数编码示例', 'info')
 }
 </script>
 
@@ -305,48 +260,6 @@ const loadBase64Example = () => {
   cursor: pointer;
 }
 
-.tool-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.tool-btn:hover:not(:disabled) {
-  background-color: var(--color-background-mute);
-  border-color: var(--color-border-hover);
-}
-
-.tool-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tool-btn.primary {
-  background-color: var(--vt-c-green);
-  color: white;
-  border-color: var(--vt-c-green);
-}
-
-.tool-btn.primary:hover:not(:disabled) {
-  background-color: #369870;
-}
-
-.tool-btn.danger {
-  background-color: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
-.tool-btn.danger:hover:not(:disabled) {
-  background-color: #c82333;
-}
-
 .editor-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -360,31 +273,6 @@ const loadBase64Example = () => {
   flex-direction: column;
 }
 
-.status-message {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.status-message.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.status-message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.status-message.info {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
 .examples-section {
   margin-bottom: 2rem;
 }
@@ -395,10 +283,15 @@ const loadBase64Example = () => {
   color: var(--color-heading);
 }
 
-.examples-grid,
-.info-grid {
+.examples-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
@@ -415,6 +308,12 @@ const loadBase64Example = () => {
   margin: 0 0 0.75rem 0;
   color: var(--color-heading);
   font-size: 1rem;
+}
+
+.info-card h5 {
+  margin: 0.75rem 0 0.5rem 0;
+  color: var(--color-heading);
+  font-size: 0.9rem;
 }
 
 .example-item {
@@ -457,13 +356,33 @@ const loadBase64Example = () => {
 .info-card p {
   color: var(--color-text);
   line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+}
+
+.info-card ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
+}
+
+.info-card li {
+  padding: 0.25rem 0;
+  color: var(--color-text);
+  position: relative;
+  padding-left: 1rem;
+}
+
+.info-card li::before {
+  content: '•';
+  color: var(--vt-c-green);
+  font-weight: bold;
+  position: absolute;
+  left: 0;
 }
 
 @media (max-width: 768px) {
   .editor-layout,
-  .examples-grid,
-  .info-grid {
+  .examples-grid {
     grid-template-columns: 1fr;
   }
 

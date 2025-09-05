@@ -4,7 +4,7 @@ import type { ToolCategory } from '@/types'
 
 export const useAppStore = defineStore('app', () => {
   // 当前选中的工具
-  const currentTool = ref('json')
+  const currentTool = ref('json-formatter')
 
   // 主题设置
   const theme = ref<'light' | 'dark'>('light')
@@ -14,9 +14,8 @@ export const useAppStore = defineStore('app', () => {
     {
       title: 'JSON工具',
       tools: [
-        { name: 'JSON格式化', path: '/json', description: '格式化JSON字符串' },
-        { name: 'JSON压缩', path: '/json', description: '压缩JSON字符串' },
-        { name: 'JSON转实体类', path: '/json', description: '将JSON转换为实体类' },
+        { name: 'JSON格式化', path: '/json-formatter', description: '格式化和压缩JSON字符串' },
+        { name: 'JSON转实体类', path: '/json-to-entity', description: '将JSON转换为实体类代码' },
       ],
     },
     {
@@ -26,8 +25,8 @@ export const useAppStore = defineStore('app', () => {
     {
       title: '编码转换',
       tools: [
-        { name: 'URL编码/解码', path: '/encode', description: 'URL编码和解码' },
-        { name: 'Base64编码/解码', path: '/encode', description: 'Base64编码和解码' },
+        { name: 'URL编解码', path: '/url-encoder', description: 'URL编码和解码' },
+        { name: 'Base64编解码', path: '/base64-encoder', description: 'Base64编码和解码' },
       ],
     },
     {

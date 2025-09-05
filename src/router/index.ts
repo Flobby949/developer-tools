@@ -5,13 +5,19 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/json',
+      redirect: '/json-formatter',
     },
     {
-      path: '/json',
-      name: 'json',
-      component: () => import('../views/json/JsonTools.vue'),
-      meta: { title: 'JSON工具' },
+      path: '/json-formatter',
+      name: 'json-formatter',
+      component: () => import('../views/json/JsonFormatter.vue'),
+      meta: { title: 'JSON格式化' },
+    },
+    {
+      path: '/json-to-entity',
+      name: 'json-to-entity',
+      component: () => import('../views/json/JsonToEntity.vue'),
+      meta: { title: 'JSON转实体类' },
     },
     {
       path: '/yaml',
@@ -20,10 +26,16 @@ const router = createRouter({
       meta: { title: 'YAML工具' },
     },
     {
-      path: '/encode',
-      name: 'encode',
-      component: () => import('../views/encode/EncodeTools.vue'),
-      meta: { title: '编码转换' },
+      path: '/url-encoder',
+      name: 'url-encoder',
+      component: () => import('../views/encode/UrlEncoder.vue'),
+      meta: { title: 'URL编解码' },
+    },
+    {
+      path: '/base64-encoder',
+      name: 'base64-encoder',
+      component: () => import('../views/encode/Base64Encoder.vue'),
+      meta: { title: 'Base64编解码' },
     },
     {
       path: '/regex',
