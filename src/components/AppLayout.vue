@@ -25,11 +25,20 @@
       </div>
 
       <nav class="navigation">
+        <!-- 首页链接 -->
+        <div class="nav-category">
+          <RouterLink to="/" class="home-link" @click="handleLinkClick('/')">
+            <span class="home-icon">🏠</span>
+            <span class="home-text">首页</span>
+            <span class="link-arrow">→</span>
+          </RouterLink>
+        </div>
+
         <div
           v-for="(category, index) in appStore.toolCategories"
           :key="category.title"
           class="nav-category"
-          :style="{ animationDelay: `${index * 0.1}s` }"
+          :style="{ animationDelay: `${(index + 1) * 0.1}s` }"
         >
           <h3 class="category-title">{{ category.title }}</h3>
           <ul class="tool-list">
@@ -298,6 +307,76 @@ onUnmounted(() => {
 .tool-link.router-link-active .link-arrow {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* 首页链接样式 */
+.home-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 3px solid transparent;
+  position: relative;
+  font-weight: 600;
+  font-size: 1rem;
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 50%);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 0 var(--spacing) var(--spacing-lg) 0;
+}
+
+.home-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: width 0.3s ease;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.home-link:hover {
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 80%);
+  color: var(--color-text-active);
+  transform: translateX(4px);
+}
+
+.home-link:hover::before {
+  width: 4px;
+}
+
+.home-link:hover .link-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.home-link.router-link-active {
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 80%);
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
+  transform: translateX(2px);
+}
+
+.home-link.router-link-active::before {
+  width: 4px;
+}
+
+.home-link.router-link-active .link-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.home-icon {
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+}
+
+.home-text {
+  flex: 1;
 }
 
 .main-content {

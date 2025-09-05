@@ -5,7 +5,9 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/json-formatter',
+      name: 'home',
+      component: () => import('../views/Home.vue'),
+      meta: { title: '首页' },
     },
     {
       path: '/json-formatter',
