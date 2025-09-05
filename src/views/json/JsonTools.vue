@@ -3,40 +3,43 @@
     <!-- 操作工具栏 -->
     <div class="json-toolbar">
       <div class="tool-group">
-        <button
-          @click="formatJson"
-          class="tool-btn primary"
-          :disabled="!toolStore.jsonInput.trim()"
-        >
+        <button @click="formatJson" class="btn btn-primary" :disabled="!toolStore.jsonInput.trim()">
+          <span class="btn-icon">✨</span>
           格式化
         </button>
-        <button @click="compressJson" class="tool-btn" :disabled="!toolStore.jsonInput.trim()">
+        <button @click="compressJson" class="btn" :disabled="!toolStore.jsonInput.trim()">
+          <span class="btn-icon">🗄</span>
           压缩
         </button>
-        <button @click="validateJson" class="tool-btn" :disabled="!toolStore.jsonInput.trim()">
+        <button @click="validateJson" class="btn" :disabled="!toolStore.jsonInput.trim()">
+          <span class="btn-icon">✓</span>
           验证
         </button>
       </div>
 
       <div class="tool-group">
-        <select v-model="toolStore.jsonLanguage" class="language-select">
+        <select v-model="toolStore.jsonLanguage" class="input select">
           <option value="java">Java</option>
           <option value="typescript">TypeScript</option>
           <option value="csharp">C#</option>
           <option value="python">Python</option>
         </select>
-        <input v-model="toolStore.jsonClassName" placeholder="类名" class="class-name-input" />
+        <input v-model="toolStore.jsonClassName" placeholder="类名" class="input" />
         <button
           @click="convertToEntity"
-          class="tool-btn success"
+          class="btn btn-success"
           :disabled="!toolStore.jsonInput.trim()"
         >
+          <span class="btn-icon">🔄</span>
           转实体类
         </button>
       </div>
 
       <div class="tool-group">
-        <button @click="clearAll" class="tool-btn danger">清空</button>
+        <button @click="clearAll" class="btn btn-error">
+          <span class="btn-icon">🗑️</span>
+          清空
+        </button>
       </div>
     </div>
 
@@ -68,7 +71,7 @@
     </div>
 
     <!-- 状态信息 -->
-    <div v-if="statusMessage" class="status-message" :class="statusType">
+    <div v-if="statusMessage" class="alert" :class="`alert-${statusType}`">
       {{ statusMessage }}
     </div>
   </ToolPanel>
