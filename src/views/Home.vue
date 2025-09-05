@@ -1,5 +1,5 @@
 <template>
-  <div class="home-page">
+  <div class="home-page" :class="{ dark: appStore.theme === 'dark' }">
     <!-- 顶部导航栏 -->
     <header class="top-header">
       <div class="header-content">
@@ -554,6 +554,34 @@ const navigateToTool = (path: string) => {
 
 .tool-card:hover .go-arrow {
   transform: translateX(4px);
+}
+
+/* 深色主题样式 */
+.dark {
+  --color-background: #0a0a0a;
+  --color-background-soft: #1a1a1a;
+  --color-background-mute: #262626;
+  --color-background-dim: #404040;
+  --color-border: #333333;
+  --color-text: #e5e5e5;
+  --color-text-light: #a3a3a3;
+  --color-text-lighter: #737373;
+  --color-text-active: #ffffff;
+  --color-heading: #ffffff;
+}
+
+.dark .home-page::before {
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+}
+
+.dark .tool-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+.dark .tool-card:hover {
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* 响应式设计 */
