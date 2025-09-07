@@ -79,14 +79,25 @@
         </div>
 
         <div class="example-card">
-          <h4>嵌套对象</h4>
+          <h4>嵌套对象示例</h4>
           <div class="example-item">
             <span class="example-label">JSON：</span>
             <code class="example-text"
-              >{"user":{"id":1,"name":"李四"},"profile":{"city":"上海","phone":"123456"}}</code
+              >{"user":{"id":1,"name":"李四","profile":{"age":28,"city":"上海"}},"company":{"name":"科技公司","address":"上海市"}}</code
             >
           </div>
           <button @click="loadNestedExample" class="example-btn">使用此示例</button>
+        </div>
+
+        <div class="example-card">
+          <h4>数组嵌套示例</h4>
+          <div class="example-item">
+            <span class="example-label">JSON：</span>
+            <code class="example-text"
+              >{"orders":[{"id":1,"items":[{"name":"商品A","price":99.9}]},{"id":2,"status":"completed"}]}</code
+            >
+          </div>
+          <button @click="loadArrayExample" class="example-btn">使用此示例</button>
         </div>
       </div>
     </div>
@@ -156,7 +167,9 @@ const outputLanguage = computed(() => {
 // 示例数据
 const userExample = '{"id":1,"name":"张三","email":"zhangsan@example.com","age":25,"isActive":true}'
 const nestedExample =
-  '{"user":{"id":1,"name":"李四","avatar":"https://example.com/avatar.jpg"},"profile":{"city":"上海","phone":"123456","tags":["developer","designer"]}}'
+  '{"user":{"id":1,"name":"李四","profile":{"age":28,"city":"上海","country":"中国"}},"company":{"name":"科技公司","address":"上海市浦东新区","employees":100}}'
+const arrayExample =
+  '{"orders":[{"id":1,"items":[{"name":"商品A","price":99.9,"category":{"name":"电子产品","code":"ELEC"}}],"customer":{"name":"客户A","email":"customer@example.com"}},{"id":2,"status":"completed","total":299.8}],"pagination":{"page":1,"limit":10,"total":25}}'
 
 // 显示状态消息
 const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -224,8 +237,14 @@ const loadUserExample = () => {
 
 const loadNestedExample = () => {
   toolStore.jsonToEntityInput = nestedExample
-  toolStore.jsonClassName = 'UserProfile'
+  toolStore.jsonClassName = 'UserData'
   showStatus('已加载嵌套对象示例', 'info')
+}
+
+const loadArrayExample = () => {
+  toolStore.jsonToEntityInput = arrayExample
+  toolStore.jsonClassName = 'OrderData'
+  showStatus('已加载数组嵌套示例', 'info')
 }
 </script>
 
@@ -272,7 +291,7 @@ const loadNestedExample = () => {
 
 .examples-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
