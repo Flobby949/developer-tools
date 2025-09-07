@@ -35,6 +35,27 @@ export const useAppStore = defineStore('app', () => {
       ],
     },
     {
+      title: '加解密工具',
+      tools: [
+        { name: 'MD5哈希工具', path: '/md5-hasher', description: 'MD5哈希计算，支持大小写转换' },
+        {
+          name: 'SHA哈希工具',
+          path: '/sha-hasher',
+          description: '支持SHA1、SHA256、SHA512等哈希算法',
+        },
+        {
+          name: 'AES加解密工具',
+          path: '/aes-crypto',
+          description: 'AES对称加密，支持多种模式和密钥长度',
+        },
+        {
+          name: 'RSA加解密工具',
+          path: '/rsa-crypto',
+          description: 'RSA非对称加密，支持密钥对生成',
+        },
+      ],
+    },
+    {
       title: '其他工具',
       tools: [
         { name: '正则表达式测试', path: '/regex', description: '在线正则表达式测试' },

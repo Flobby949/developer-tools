@@ -19,7 +19,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/js-yaml": "^4.0.9",
+    "crypto-js": "^4.2.0",
     "js-yaml": "^4.1.0",
     "monaco-editor": "^0.52.2",
     "pinia": "^3.0.3",

@@ -57,6 +57,30 @@ const router = createRouter({
       component: () => import('../views/jwt/JwtDecoder.vue'),
       meta: { title: 'JWT解析工具 - 开发者工具集' },
     },
+    {
+      path: '/md5-hasher',
+      name: 'md5-hasher',
+      component: () => import('../views/crypto/MD5Tool.vue'),
+      meta: { title: 'MD5哈希工具 - 开发者工具集' },
+    },
+    {
+      path: '/sha-hasher',
+      name: 'sha-hasher',
+      component: () => import('../views/crypto/SHAHasher.vue'),
+      meta: { title: 'SHA哈希工具 - 开发者工具集' },
+    },
+    {
+      path: '/aes-crypto',
+      name: 'aes-crypto',
+      component: () => import('../views/crypto/AESCrypto.vue'),
+      meta: { title: 'AES加解密工具 - 开发者工具集' },
+    },
+    {
+      path: '/rsa-crypto',
+      name: 'rsa-crypto',
+      component: () => import('../views/crypto/RSACrypto.vue'),
+      meta: { title: 'RSA加解密工具 - 开发者工具集' },
+    },
   ],
 })
 
