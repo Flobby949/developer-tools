@@ -146,6 +146,7 @@ const getToolIcon = (toolName: string): string => {
     URL编解码: '🔗',
     Base64编解码: '🔐',
     正则表达式测试: '🔍',
+    JWT解析工具: '🔑',
   }
   return iconMap[toolName] || '🛠️'
 }

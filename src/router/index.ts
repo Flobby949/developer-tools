@@ -45,6 +45,12 @@ const router = createRouter({
       component: () => import('../views/regex/RegexTools.vue'),
       meta: { title: '正则表达式测试 - 开发者工具集' },
     },
+    {
+      path: '/jwt-decoder',
+      name: 'jwt-decoder',
+      component: () => import('../views/jwt/JwtDecoder.vue'),
+      meta: { title: 'JWT解析工具 - 开发者工具集' },
+    },
   ],
 })
 

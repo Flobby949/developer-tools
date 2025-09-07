@@ -31,6 +31,10 @@ export const useToolStore = defineStore('tool', () => {
   const regexFlags = ref('g')
   const regexMatches = ref<string[]>([])
 
+  // JWT解析工具相关状态
+  const jwtInput = ref('')
+  const jwtOutput = ref('')
+
   // 清空所有数据
   const clearAll = () => {
     jsonFormatterInput.value = ''
@@ -46,6 +50,8 @@ export const useToolStore = defineStore('tool', () => {
     regexPattern.value = ''
     regexText.value = ''
     regexMatches.value = []
+    jwtInput.value = ''
+    jwtOutput.value = ''
   }
 
   return {
@@ -77,6 +83,10 @@ export const useToolStore = defineStore('tool', () => {
     regexText,
     regexFlags,
     regexMatches,
+
+    // JWT解析
+    jwtInput,
+    jwtOutput,
 
     // Methods
     clearAll,

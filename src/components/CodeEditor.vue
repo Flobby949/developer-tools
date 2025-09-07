@@ -82,6 +82,22 @@ onMounted(async () => {
       folding: true,
       wordWrap: 'on',
       placeholder: props.placeholder,
+      // 移动端滚动优化配置
+      scrollbar: {
+        vertical: 'auto',
+        horizontal: 'auto',
+        useShadows: false,
+        verticalHasArrows: false,
+        horizontalHasArrows: false,
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+        alwaysConsumeMouseWheel: false,
+      },
+      // 触摸设备优化
+      multiCursorModifier: 'ctrlCmd',
+      smoothScrolling: true,
+      mouseWheelScrollSensitivity: 1,
+      fastScrollSensitivity: 5,
     })
 
     // 监听内容变化
@@ -263,6 +279,45 @@ defineExpose({
 .editor-container {
   height: v-bind(height);
   width: 100%;
+  /* 移动端触摸滚动优化 */
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overflow: auto;
+}
+
+/* Monaco Editor 移动端优化 */
+.editor-container :deep(.monaco-editor) {
+  /* 确保编辑器在移动端能正常滚动 */
+  touch-action: pan-y;
+}
+
+.editor-container :deep(.monaco-scrollable-element) {
+  /* 优化滚动条在移动端的显示 */
+  touch-action: pan-y;
+}
+
+.editor-container :deep(.monaco-editor .overflow-guard) {
+  /* 防止内容溢出导致的滚动问题 */
+  touch-action: pan-y;
+}
+
+/* 移动端滚动条样式优化 */
+@media (max-width: 768px) {
+  .editor-container :deep(.monaco-scrollable-element > .scrollbar) {
+    /* 移动端滚动条更粗一些，便于触摸操作 */
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider) {
+    /* 滚动条滑块在移动端更明显 */
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 6px !important;
+  }
+
+  .editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider:hover) {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+  }
 }
 
 /* 响应式设计 */

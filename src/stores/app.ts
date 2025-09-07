@@ -31,7 +31,14 @@ export const useAppStore = defineStore('app', () => {
     },
     {
       title: '其他工具',
-      tools: [{ name: '正则表达式测试', path: '/regex', description: '在线正则表达式测试' }],
+      tools: [
+        { name: '正则表达式测试', path: '/regex', description: '在线正则表达式测试' },
+        {
+          name: 'JWT解析工具',
+          path: '/jwt-decoder',
+          description: '解析JWT令牌，查看Header、Payload和Signature',
+        },
+      ],
     },
   ])
 
