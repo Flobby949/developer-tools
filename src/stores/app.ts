@@ -27,6 +27,11 @@ export const useAppStore = defineStore('app', () => {
       tools: [
         { name: 'URL编解码', path: '/url-encoder', description: 'URL编码和解码' },
         { name: 'Base64编解码', path: '/base64-encoder', description: 'Base64编码和解码' },
+        {
+          name: 'Base64文件转换',
+          path: '/base64-file-converter',
+          description: '文件与Base64格式的相互转换',
+        },
       ],
     },
     {

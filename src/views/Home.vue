@@ -145,6 +145,7 @@ const getToolIcon = (toolName: string): string => {
     YAML转Properties: '📄',
     URL编解码: '🔗',
     Base64编解码: '🔐',
+    Base64文件转换: '📁',
     正则表达式测试: '🔍',
     JWT解析工具: '🔑',
   }

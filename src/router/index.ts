@@ -40,6 +40,12 @@ const router = createRouter({
       meta: { title: 'Base64编解码 - 开发者工具集' },
     },
     {
+      path: '/base64-file-converter',
+      name: 'base64-file-converter',
+      component: () => import('../views/encode/Base64FileConverter.vue'),
+      meta: { title: 'Base64文件转换 - 开发者工具集' },
+    },
+    {
       path: '/regex',
       name: 'regex',
       component: () => import('../views/regex/RegexTools.vue'),
