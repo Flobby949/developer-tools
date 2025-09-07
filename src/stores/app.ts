@@ -64,6 +64,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/jwt-decoder',
           description: '解析JWT令牌，查看Header、Payload和Signature',
         },
+        {
+          name: '二维码工具',
+          path: '/qrcode-tool',
+          description: '生成和解析二维码，支持自定义参数',
+        },
       ],
     },
   ])

@@ -81,6 +81,12 @@ const router = createRouter({
       component: () => import('../views/crypto/RSACrypto.vue'),
       meta: { title: 'RSA加解密工具 - 开发者工具集' },
     },
+    {
+      path: '/qrcode-tool',
+      name: 'qrcode-tool',
+      component: () => import('../views/qrcode/QRCodeTool.vue'),
+      meta: { title: '二维码工具 - 开发者工具集' },
+    },
   ],
 })
 

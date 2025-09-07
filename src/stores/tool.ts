@@ -63,6 +63,20 @@ export const useToolStore = defineStore('tool', () => {
   const rsaPrivateKey = ref('')
   const rsaKeySize = ref<1024 | 2048 | 4096>(2048)
 
+  // 二维码工具相关状态
+  const qrCodeInput = ref('')
+  const qrCodeResult = ref('')
+  const qrCodeOptions = ref({
+    width: 256,
+    errorCorrectionLevel: 'M' as 'L' | 'M' | 'Q' | 'H',
+    color: {
+      dark: '#000000',
+      light: '#ffffff',
+    },
+    margin: 4,
+    type: 'image/png' as 'image/png' | 'image/jpeg' | 'image/webp',
+  })
+
   // 清空所有数据
   const clearAll = () => {
     jsonFormatterInput.value = ''
@@ -92,6 +106,8 @@ export const useToolStore = defineStore('tool', () => {
     rsaOutput.value = ''
     rsaPublicKey.value = ''
     rsaPrivateKey.value = ''
+    qrCodeInput.value = ''
+    qrCodeResult.value = ''
   }
 
   return {
@@ -155,6 +171,11 @@ export const useToolStore = defineStore('tool', () => {
     rsaPublicKey,
     rsaPrivateKey,
     rsaKeySize,
+
+    // 二维码工具
+    qrCodeInput,
+    qrCodeResult,
+    qrCodeOptions,
 
     // Methods
     clearAll,
