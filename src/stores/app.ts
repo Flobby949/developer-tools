@@ -56,6 +56,16 @@ export const useAppStore = defineStore('app', () => {
       ],
     },
     {
+      title: '通信测试',
+      tools: [
+        {
+          name: 'WebSocket测试工具',
+          path: '/websocket-tool',
+          description: '测试WebSocket连接，发送和接收消息，监控连接性能',
+        },
+      ],
+    },
+    {
       title: '其他工具',
       tools: [
         { name: '正则表达式测试', path: '/regex', description: '在线正则表达式测试' },

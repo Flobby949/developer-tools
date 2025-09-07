@@ -1,5 +1,11 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import type {
+  WebSocketMessage,
+  WebSocketStats,
+  WebSocketConnectionConfig,
+  WebSocketConnectionInfo,
+} from '@/types'
 
 export const useToolStore = defineStore('tool', () => {
   // JSON格式化工具相关状态
@@ -77,6 +83,46 @@ export const useToolStore = defineStore('tool', () => {
     type: 'image/png' as 'image/png' | 'image/jpeg' | 'image/webp',
   })
 
+  // WebSocket工具相关状态
+  const wsUrl = ref('ws://localhost:8080')
+  const wsProtocols = ref<string[]>([])
+  const wsHeaders = ref<Record<string, string>>({})
+  const wsConnectionConfig = ref<WebSocketConnectionConfig>({
+    url: '',
+    protocols: [],
+    headers: {},
+    timeout: 5000,
+    reconnectAttempts: 3,
+    reconnectInterval: 1000,
+    pingInterval: 300000, // 5分钟ping一次，仅用于保活和连通性检测
+    maxMessageSize: 1024 * 1024, // 1MB
+    maxMessages: 1000,
+  })
+  const wsConnectionInfo = ref<WebSocketConnectionInfo>({
+    state: 'disconnected',
+    url: '',
+    protocol: '',
+    readyState: WebSocket.CLOSED,
+    reconnectCount: 0,
+  })
+  const wsStats = ref<WebSocketStats>({
+    messagesReceived: 0,
+    messagesSent: 0,
+    bytesReceived: 0,
+    bytesSent: 0,
+    averageLatency: 0,
+    maxLatency: 0,
+    minLatency: 0,
+    connectionDuration: 0,
+    lastPingTime: 0,
+  })
+  const wsMessages = ref<WebSocketMessage[]>([])
+  const wsMessageInput = ref('')
+  const wsMessageFormat = ref<'text' | 'json' | 'binary'>('text')
+  const wsAutoScroll = ref(true)
+  const wsShowTimestamp = ref(true)
+  const wsShowMessageSize = ref(true)
+
   // 清空所有数据
   const clearAll = () => {
     jsonFormatterInput.value = ''
@@ -108,6 +154,7 @@ export const useToolStore = defineStore('tool', () => {
     rsaPrivateKey.value = ''
     qrCodeInput.value = ''
     qrCodeResult.value = ''
+    // WebSocket状态不在清空范围内，因为可能正在使用中
   }
 
   return {
@@ -176,6 +223,20 @@ export const useToolStore = defineStore('tool', () => {
     qrCodeInput,
     qrCodeResult,
     qrCodeOptions,
+
+    // WebSocket工具
+    wsUrl,
+    wsProtocols,
+    wsHeaders,
+    wsConnectionConfig,
+    wsConnectionInfo,
+    wsStats,
+    wsMessages,
+    wsMessageInput,
+    wsMessageFormat,
+    wsAutoScroll,
+    wsShowTimestamp,
+    wsShowMessageSize,
 
     // Methods
     clearAll,

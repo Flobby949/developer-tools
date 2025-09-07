@@ -87,6 +87,12 @@ const router = createRouter({
       component: () => import('../views/qrcode/QRCodeTool.vue'),
       meta: { title: '二维码工具 - 开发者工具集' },
     },
+    {
+      path: '/websocket-tool',
+      name: 'websocket-tool',
+      component: () => import('../views/communication/WebSocketTool.vue'),
+      meta: { title: 'WebSocket测试工具 - 开发者工具集' },
+    },
   ],
 })
 
