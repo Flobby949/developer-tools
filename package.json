@@ -21,10 +21,12 @@
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/js-yaml": "^4.0.9",
+    "@types/mqtt": "^0.0.34",
     "@types/qrcode": "^1.5.5",
     "crypto-js": "^4.2.0",
     "js-yaml": "^4.1.0",
     "monaco-editor": "^0.52.2",
+    "mqtt": "^5.14.1",
     "pinia": "^3.0.3",
     "qrcode": "^1.5.4",
     "qrcode-reader": "^1.0.4",

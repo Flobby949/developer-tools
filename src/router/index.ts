@@ -93,6 +93,12 @@ const router = createRouter({
       component: () => import('../views/communication/WebSocketTool.vue'),
       meta: { title: 'WebSocket测试工具 - 开发者工具集' },
     },
+    {
+      path: '/mqtt-tool',
+      name: 'mqtt-tool',
+      component: () => import('../views/communication/MqttTool.vue'),
+      meta: { title: 'MQTT测试工具 - 开发者工具集' },
+    },
   ],
 })
 

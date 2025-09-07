@@ -5,6 +5,11 @@ import type {
   WebSocketStats,
   WebSocketConnectionConfig,
   WebSocketConnectionInfo,
+  MqttMessage,
+  MqttSubscription,
+  MqttConnectionConfig,
+  MqttConnectionInfo,
+  MqttStats,
 } from '@/types'
 
 export const useToolStore = defineStore('tool', () => {
@@ -123,6 +128,53 @@ export const useToolStore = defineStore('tool', () => {
   const wsShowTimestamp = ref(true)
   const wsShowMessageSize = ref(true)
 
+  // MQTT工具相关状态
+  const mqttBrokerUrl = ref('ws://broker.emqx.io:8083/mqtt')
+  const mqttPort = ref(8083)
+  const mqttClientId = ref('')
+  const mqttUsername = ref('')
+  const mqttPassword = ref('')
+  const mqttProtocol = ref<'mqtt' | 'mqtts' | 'ws' | 'wss'>('ws')
+  const mqttConnectionConfig = ref<MqttConnectionConfig>({
+    brokerUrl: 'ws://broker.emqx.io:8083/mqtt',
+    port: 8083,
+    clientId: '',
+    keepAlive: 60,
+    cleanSession: true,
+    reconnectPeriod: 1000,
+    connectTimeout: 5000,
+    protocol: 'ws',
+    maxReconnectTimes: 3,
+  })
+  const mqttConnectionInfo = ref<MqttConnectionInfo>({
+    state: 'disconnected',
+    brokerUrl: '',
+    clientId: '',
+    protocol: 'ws',
+    reconnectCount: 0,
+  })
+  const mqttStats = ref<MqttStats>({
+    messagesPublished: 0,
+    messagesReceived: 0,
+    bytesPublished: 0,
+    bytesReceived: 0,
+    subscriptionCount: 0,
+    connectionDuration: 0,
+    reconnectCount: 0,
+    lastActivity: 0,
+  })
+  const mqttMessages = ref<MqttMessage[]>([])
+  const mqttSubscriptions = ref<MqttSubscription[]>([])
+  const mqttPublishTopic = ref('')
+  const mqttPublishPayload = ref('')
+  const mqttPublishQos = ref<0 | 1 | 2>(0)
+  const mqttPublishRetain = ref(false)
+  const mqttSubscribeTopic = ref('')
+  const mqttSubscribeQos = ref<0 | 1 | 2>(0)
+  const mqttAutoScroll = ref(true)
+  const mqttShowTimestamp = ref(true)
+  const mqttShowQos = ref(true)
+
   // 清空所有数据
   const clearAll = () => {
     jsonFormatterInput.value = ''
@@ -237,6 +289,28 @@ export const useToolStore = defineStore('tool', () => {
     wsAutoScroll,
     wsShowTimestamp,
     wsShowMessageSize,
+
+    // MQTT工具
+    mqttBrokerUrl,
+    mqttPort,
+    mqttClientId,
+    mqttUsername,
+    mqttPassword,
+    mqttProtocol,
+    mqttConnectionConfig,
+    mqttConnectionInfo,
+    mqttStats,
+    mqttMessages,
+    mqttSubscriptions,
+    mqttPublishTopic,
+    mqttPublishPayload,
+    mqttPublishQos,
+    mqttPublishRetain,
+    mqttSubscribeTopic,
+    mqttSubscribeQos,
+    mqttAutoScroll,
+    mqttShowTimestamp,
+    mqttShowQos,
 
     // Methods
     clearAll,

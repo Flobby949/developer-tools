@@ -90,3 +90,65 @@ export interface WebSocketConnectionInfo {
   connectedAt?: number
   reconnectCount: number
 }
+
+// MQTT工具相关类型
+export interface MqttMessage {
+  id: string
+  type: 'published' | 'received' | 'system' | 'error'
+  topic: string
+  payload: string
+  qos: 0 | 1 | 2
+  retain: boolean
+  timestamp: number
+  size: number
+}
+
+export interface MqttSubscription {
+  id: string
+  topic: string
+  qos: 0 | 1 | 2
+  subscribedAt: number
+  messageCount: number
+}
+
+export interface MqttConnectionConfig {
+  brokerUrl: string
+  port: number
+  clientId: string
+  username?: string
+  password?: string
+  keepAlive: number
+  cleanSession: boolean
+  reconnectPeriod: number
+  connectTimeout: number
+  protocol: 'mqtt' | 'mqtts' | 'ws' | 'wss'
+  maxReconnectTimes: number
+}
+
+export interface MqttStats {
+  messagesPublished: number
+  messagesReceived: number
+  bytesPublished: number
+  bytesReceived: number
+  subscriptionCount: number
+  connectionDuration: number
+  reconnectCount: number
+  lastActivity: number
+}
+
+export type MqttConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'error'
+
+export interface MqttConnectionInfo {
+  state: MqttConnectionState
+  brokerUrl: string
+  clientId: string
+  protocol: string
+  lastError?: string
+  connectedAt?: number
+  reconnectCount: number
+}
