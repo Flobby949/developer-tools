@@ -105,6 +105,12 @@ const router = createRouter({
       component: () => import('../views/communication/MqttTool.vue'),
       meta: { title: 'MQTT测试工具 - 开发者工具集' },
     },
+    {
+      path: '/color-palette',
+      name: 'color-palette',
+      component: () => import('../views/color/ColorPalette.vue'),
+      meta: { title: '调色盘 - 开发者工具集' },
+    },
   ],
 })
 

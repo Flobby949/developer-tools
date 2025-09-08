@@ -89,6 +89,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/timestamp-tool',
           description: '秒/毫秒时间戳与日期互转，支持时区显示与转换',
         },
+        {
+          name: '调色盘',
+          path: '/color-palette',
+          description: '颜色选择与 HEX/RGB/HSL/HSV 等格式转换',
+        },
       ],
     },
   ])
