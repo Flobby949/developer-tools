@@ -23,19 +23,6 @@
                   class="form-input"
                   :disabled="isConnected"
                 />
-                <select
-                  class="broker-presets"
-                  @change="selectBrokerPreset($event)"
-                  :disabled="isConnected"
-                  value=""
-                >
-                  <option value="">选择预设服务器</option>
-                  <option value="ws://broker.emqx.io:8083/mqtt">EMQ X (公共)</option>
-                  <option value="wss://broker.emqx.io:8084/mqtt">EMQ X SSL (公共)</option>
-                  <option value="ws://test.mosquitto.org:8080">Mosquitto (公共)</option>
-                  <option value="mqtt://localhost:1883">Local MQTT</option>
-                  <option value="ws://localhost:8083/mqtt">Local WebSocket</option>
-                </select>
               </div>
               <div class="input-help">支持协议：mqtt://、mqtts://、ws://、wss://</div>
             </div>
@@ -608,32 +595,7 @@ const unsubscribeFromTopic = async (topic: string) => {
   }
 }
 
-// 选择预设代理服务器
-const selectBrokerPreset = (event: Event) => {
-  const target = event.target as HTMLSelectElement
-  const url = target.value
-  if (url) {
-    store.mqttBrokerUrl = url
-
-    // 根据URL自动设置协议和端口
-    if (url.startsWith('mqtt://')) {
-      store.mqttProtocol = 'mqtt'
-      store.mqttPort = 1883
-    } else if (url.startsWith('mqtts://')) {
-      store.mqttProtocol = 'mqtts'
-      store.mqttPort = 8883
-    } else if (url.startsWith('ws://')) {
-      store.mqttProtocol = 'ws'
-      store.mqttPort = url.includes(':8080') ? 8080 : 8083
-    } else if (url.startsWith('wss://')) {
-      store.mqttProtocol = 'wss'
-      store.mqttPort = url.includes(':8084') ? 8084 : 8083
-    }
-
-    // 重置选择框
-    target.value = ''
-  }
-}
+// 已移除预设代理服务器功能
 
 // 清空消息
 const clearMessages = () => {
@@ -659,7 +621,7 @@ const setupEventListeners = () => {
   mqttTester.value.on('error', (error: unknown) => {
     const errorObj = error as Error
     store.mqttConnectionInfo.lastError = errorObj.message
-    addSystemMessage(`错误: ${errorObj.message}`, 'error')
+    addSystemMessage(`错误: ${errorObj.message}`)
   })
 
   mqttTester.value.on('messageReceived', (message: unknown) => {
@@ -727,7 +689,7 @@ const setupEventListeners = () => {
 }
 
 // 添加系统消息
-const addSystemMessage = (content: string, _type: 'info' | 'error' = 'info') => {
+const addSystemMessage = (content: string) => {
   const message: MqttMessage = {
     id: `sys-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type: 'system',

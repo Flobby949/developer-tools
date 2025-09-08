@@ -21,7 +21,6 @@
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/js-yaml": "^4.0.9",
-    "@types/mqtt": "^0.0.34",
     "@types/qrcode": "^1.5.5",
     "crypto-js": "^4.2.0",
     "js-yaml": "^4.1.0",

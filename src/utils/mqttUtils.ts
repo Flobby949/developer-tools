@@ -361,6 +361,8 @@ export class MqttTester {
     this.connectionInfo.lastError = undefined
 
     this.addSystemMessage('MQTT连接已建立')
+    // 重连成功后恢复订阅
+    this.resubscribeAll()
     this.emit('stateChange', this.connectionInfo.state)
     this.emit('connected')
   }
@@ -380,11 +382,12 @@ export class MqttTester {
       size: messageSize,
     }
 
-    // 更新订阅统计
-    const subscription = this.subscriptions.get(topic)
-    if (subscription) {
-      subscription.messageCount++
-    }
+    // 更新订阅统计：支持通配符匹配
+    this.subscriptions.forEach((subscription) => {
+      if (this.topicMatches(subscription.topic, topic)) {
+        subscription.messageCount++
+      }
+    })
 
     this.addMessage(message)
     this.updateStats('received', messageSize)
@@ -409,6 +412,10 @@ export class MqttTester {
     ) {
       this.addErrorMessage(`重连失败，已达到最大重连次数 (${this.config.maxReconnectTimes})`)
       this.connectionInfo.state = 'error'
+      if (this.client) {
+        // 达到最大重连次数后强制结束，避免 mqtt.js 继续重连
+        this.client.end(true)
+      }
     } else {
       this.addSystemMessage('MQTT连接已关闭')
     }
@@ -435,6 +442,16 @@ export class MqttTester {
       `重连尝试 ${this.connectionInfo.reconnectCount}/${this.config.maxReconnectTimes}`,
     )
     this.emit('stateChange', this.connectionInfo.state)
+
+    // 超过最大重连次数后停止重连
+    if (this.connectionInfo.reconnectCount > this.config.maxReconnectTimes) {
+      if (this.client) {
+        this.client.end(true)
+      }
+      this.connectionInfo.state = 'error'
+      this.addErrorMessage(`已超过最大重连次数 (${this.config.maxReconnectTimes})，停止重连`)
+      this.emit('stateChange', this.connectionInfo.state)
+    }
   }
 
   private handleOffline(): void {
@@ -459,6 +476,46 @@ export class MqttTester {
     if (this.messages.length > this.maxMessages) {
       this.messages.splice(0, this.messages.length - this.maxMessages)
     }
+  }
+
+  // 在成功连接后，自动恢复订阅
+  private resubscribeAll(): void {
+    if (!this.client || !this.client.connected) return
+    this.subscriptions.forEach((sub) => {
+      this.client!.subscribe(sub.topic, { qos: sub.qos }, (error) => {
+        if (error) {
+          this.addErrorMessage(`重订阅失败: ${sub.topic} - ${error.message}`)
+        } else {
+          this.addSystemMessage(`已重订阅: ${sub.topic} (QoS: ${sub.qos})`)
+        }
+      })
+    })
+  }
+
+  // 主题匹配（支持 + / # 通配符）
+  private topicMatches(filter: string, topic: string): boolean {
+    if (filter === topic) return true
+    const filterLevels = filter.split('/')
+    const topicLevels = topic.split('/')
+
+    for (let i = 0; i < filterLevels.length; i++) {
+      const current = filterLevels[i]
+      const isLastFilterLevel = i === filterLevels.length - 1
+      if (current === '#') {
+        return true
+      }
+      if (current === '+') {
+        if (!topicLevels[i]) return false
+        continue
+      }
+      if (current !== topicLevels[i]) {
+        return false
+      }
+      if (isLastFilterLevel && i !== topicLevels.length - 1) {
+        return false
+      }
+    }
+    return filterLevels.length === topicLevels.length
   }
 
   private addSystemMessage(content: string): void {

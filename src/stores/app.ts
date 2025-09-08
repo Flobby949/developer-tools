@@ -63,6 +63,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/websocket-tool',
           description: '测试WebSocket连接，发送和接收消息，监控连接性能',
         },
+        {
+          name: 'MQTT测试工具',
+          path: '/mqtt-tool',
+          description: '测试 MQTT 连接、发布/订阅与性能统计',
+        },
       ],
     },
     {
