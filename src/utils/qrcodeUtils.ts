@@ -54,7 +54,7 @@ export const parseQRCode = (imageData: string): Promise<string> => {
     try {
       const qr = new QrReader()
 
-      qr.callback = (error, result) => {
+      qr.callback = (error: any, result?: any) => {
         if (error) {
           reject(new Error('二维码解析失败：' + error.message))
           return
