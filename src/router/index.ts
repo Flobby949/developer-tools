@@ -10,6 +10,12 @@ const router = createRouter({
       meta: { title: '首页 - 开发者工具集' },
     },
     {
+      path: '/timestamp-tool',
+      name: 'timestamp-tool',
+      component: () => import('../views/time/TimestampTool.vue'),
+      meta: { title: '时间戳工具 - 开发者工具集' },
+    },
+    {
       path: '/json-formatter',
       name: 'json-formatter',
       component: () => import('../views/json/JsonFormatter.vue'),

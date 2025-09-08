@@ -84,6 +84,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/qrcode-tool',
           description: '生成和解析二维码，支持自定义参数',
         },
+        {
+          name: '时间戳工具',
+          path: '/timestamp-tool',
+          description: '秒/毫秒时间戳与日期互转，支持时区显示与转换',
+        },
       ],
     },
   ])
