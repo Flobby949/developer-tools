@@ -15,16 +15,20 @@
             <div class="form-group">
               <label for="mqtt-url">代理服务器地址</label>
               <div class="url-input-wrapper">
+                <div class="protocol-prefix">{{ store.mqttProtocol }}://</div>
                 <input
                   id="mqtt-url"
-                  v-model="store.mqttBrokerUrl"
+                  :value="urlWithoutProtocol"
                   type="text"
-                  placeholder="mqtt://localhost 或 ws://broker.emqx.io"
-                  class="form-input"
+                  placeholder="broker.emqx.io:8083/mqtt"
+                  class="form-input url-main-input"
                   :disabled="isConnected"
+                  @input="updateFullUrl"
                 />
               </div>
-              <div class="input-help">支持协议：mqtt://、mqtts://、ws://、wss://</div>
+              <div class="input-help">
+                支持协议：ws://、wss:// (浏览器环境下仅支持WebSocket协议)
+              </div>
             </div>
             <div class="form-group">
               <label for="mqtt-port">端口</label>
@@ -48,9 +52,8 @@
                 v-model="store.mqttProtocol"
                 class="form-select"
                 :disabled="isConnected"
+                @change="updateUrlProtocol"
               >
-                <option value="mqtt">MQTT</option>
-                <option value="mqtts">MQTTS (SSL/TLS)</option>
                 <option value="ws">WebSocket</option>
                 <option value="wss">WebSocket Secure</option>
               </select>
@@ -155,8 +158,34 @@
                     @click="passwordVisible = !passwordVisible"
                     :disabled="isConnected"
                   >
-                    <span v-if="passwordVisible">👁️</span>
-                    <span v-else>🙈</span>
+                    <svg
+                      v-if="passwordVisible"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <svg
+                      v-else
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="m15 18-.722-3.25" />
+                      <path d="m2 2 20 20" />
+                      <path d="m9 9-.637 2.89" />
+                      <path d="M1 12s4-8 11-8c2.25 0 4.31.736 5.95 1.965" />
+                      <path d="m12 5.314 1.294.707" />
+                      <path d="M23 12s-4 8-11 8c-1.948 0-3.726-.477-5.204-1.204" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -451,6 +480,19 @@ const isValidConfig = computed(() => {
   return store.mqttBrokerUrl.trim() !== ''
 })
 
+// URL处理相关
+const urlWithoutProtocol = computed(() => {
+  const currentUrl = store.mqttBrokerUrl
+  return currentUrl.replace(/^(ws:\/\/|wss:\/\/)/i, '')
+})
+
+// 更新完整URL
+const updateFullUrl = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const urlPart = target.value
+  store.mqttBrokerUrl = `${store.mqttProtocol}://${urlPart}`
+}
+
 // 连接处理
 const handleConnect = async () => {
   if (isConnected.value) {
@@ -466,6 +508,12 @@ const handleConnect = async () => {
     }
     await connect()
   }
+}
+
+// 更新URL协议前缀
+const updateUrlProtocol = () => {
+  const urlPart = urlWithoutProtocol.value
+  store.mqttBrokerUrl = `${store.mqttProtocol}://${urlPart}`
 }
 
 // 连接到MQTT代理
@@ -962,32 +1010,47 @@ onUnmounted(() => {
 /* URL输入框和预设选择器 */
 .url-input-wrapper {
   display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.url-input-wrapper .form-input {
-  flex: 1;
-}
-
-.broker-presets {
-  padding: 10px 12px;
+  align-items: stretch;
   border: 1px solid var(--color-border);
   border-radius: 6px;
+  overflow: hidden;
   background: var(--color-background);
-  color: var(--color-text);
-  font-size: 0.9rem;
   transition: border-color 0.2s;
-  min-width: 180px;
 }
 
-.broker-presets:focus {
-  outline: none;
+.url-input-wrapper:focus-within {
   border-color: var(--color-brand);
 }
 
-.broker-presets:disabled {
-  background-color: var(--color-background-soft);
+.protocol-prefix {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--color-background-soft);
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text-2);
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  min-width: fit-content;
+}
+
+.url-main-input {
+  flex: 1;
+  border: none;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.url-main-input:focus {
+  outline: none;
+}
+
+.url-main-input:disabled {
+  background-color: transparent;
   color: var(--color-text-2);
   cursor: not-allowed;
 }
@@ -995,38 +1058,54 @@ onUnmounted(() => {
 /* 密码输入框 */
 .password-input-group {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: block;
 }
 
 .password-input {
-  padding-right: 40px !important;
+  padding-right: 48px !important;
+  width: 100%;
 }
 
 .password-toggle {
   position: absolute;
-  right: 8px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
-  font-size: 1.2rem;
+  padding: 6px;
   color: var(--color-text-2);
-  transition: color 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
 }
 
 .password-toggle:hover:not(:disabled) {
-  color: var(--color-text);
-  background-color: var(--color-background-soft);
+  color: var(--color-brand);
+  background-color: rgba(102, 126, 234, 0.1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.password-toggle:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .password-toggle:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.4;
+}
+
+.password-toggle svg {
+  stroke-width: 2;
+  transition: all 0.2s ease;
+  width: 16px;
+  height: 16px;
 }
 
 /* 高级配置 */
@@ -1294,27 +1373,40 @@ onUnmounted(() => {
 
 .publish-btn,
 .subscribe-btn {
-  padding: 10px 20px;
-  background: var(--color-brand);
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  letter-spacing: 0.5px;
+  text-transform: none;
 }
 
 .publish-btn:hover:not(:disabled),
 .subscribe-btn:hover:not(:disabled) {
-  background: var(--color-brand-dark);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.publish-btn:active:not(:disabled),
+.subscribe-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .publish-btn:disabled,
 .subscribe-btn:disabled {
-  background: var(--color-background-soft);
-  color: var(--color-text-2);
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  color: #f3f4f6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* 订阅列表 */

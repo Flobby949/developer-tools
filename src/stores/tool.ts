@@ -134,7 +134,7 @@ export const useToolStore = defineStore('tool', () => {
   const mqttClientId = ref('')
   const mqttUsername = ref('')
   const mqttPassword = ref('')
-  const mqttProtocol = ref<'mqtt' | 'mqtts' | 'ws' | 'wss'>('ws')
+  const mqttProtocol = ref<'ws' | 'wss'>('ws')
   const mqttConnectionConfig = ref<MqttConnectionConfig>({
     brokerUrl: 'ws://broker.emqx.io:8083/mqtt',
     port: 8083,
