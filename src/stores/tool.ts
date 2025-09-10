@@ -13,6 +13,28 @@ import type {
 } from '@/types'
 
 export const useToolStore = defineStore('tool', () => {
+  // AI对话工具相关状态
+  const aiChatMessages = ref<
+    Array<{
+      id: string
+      role: 'user' | 'assistant'
+      content: string
+      timestamp: number
+    }>
+  >([])
+  const aiChatInput = ref('')
+  const aiChatConfig = ref({
+    baseURL: 'https://api.openai.com/v1',
+    apiKey: '',
+    model: 'gpt-5',
+    temperature: 0.7,
+    maxTokens: 2048,
+    memoryMessages: 5,
+  })
+  const aiChatLoading = ref(false)
+  const aiChatSystemPrompt = ref('你是一个有用的AI助手。')
+  const aiChatPersistent = ref(false) // 是否持久化配置
+
   // JSON格式化工具相关状态
   const jsonFormatterInput = ref('')
   const jsonFormatterOutput = ref('')
@@ -210,6 +232,14 @@ export const useToolStore = defineStore('tool', () => {
   }
 
   return {
+    // AI对话
+    aiChatMessages,
+    aiChatInput,
+    aiChatConfig,
+    aiChatLoading,
+    aiChatSystemPrompt,
+    aiChatPersistent,
+
     // JSON格式化
     jsonFormatterInput,
     jsonFormatterOutput,

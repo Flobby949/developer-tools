@@ -75,9 +75,15 @@
 
   --color-primary: var(--vt-c-green);
   --color-primary-light: #10b98115;
+  --color-primary-hover: #059669;
   --color-success: var(--vt-c-green);
+  --color-success-light: #d1fae515;
   --color-warning: var(--vt-c-orange);
+  --color-warning-light: #fef3c715;
   --color-error: var(--vt-c-red);
+  --color-danger: var(--vt-c-red);
+  --color-danger-light: #fee2e215;
+  --color-danger-hover: #dc2626;
   --color-info: var(--vt-c-blue);
 
   /* 特殊效果 */
@@ -102,7 +108,29 @@
     --color-text: var(--vt-c-text-dark-1);
     --color-text-light: var(--vt-c-text-dark-2);
     --color-text-lighter: var(--vt-c-text-dark-3);
+
+    --color-primary-hover: #10b981;
+    --color-danger-hover: #ef4444;
   }
+}
+
+/* 手动深色模式类 */
+.dark {
+  --color-background: var(--vt-c-black);
+  --color-background-soft: var(--vt-c-black-soft);
+  --color-background-mute: var(--vt-c-black-mute);
+  --color-background-dim: var(--vt-c-black-dim);
+
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
+
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-text-dark-1);
+  --color-text-light: var(--vt-c-text-dark-2);
+  --color-text-lighter: var(--vt-c-text-dark-3);
+
+  --color-primary-hover: #10b981;
+  --color-danger-hover: #ef4444;
 }
 
 /* 全局基础样式 */

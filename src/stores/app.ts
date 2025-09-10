@@ -4,13 +4,23 @@ import type { ToolCategory } from '@/types'
 
 export const useAppStore = defineStore('app', () => {
   // 当前选中的工具
-  const currentTool = ref('json-formatter')
+  const currentTool = ref('ai-chat')
 
   // 主题设置
   const theme = ref<'light' | 'dark'>('light')
 
   // 工具分类和列表
   const toolCategories = reactive<ToolCategory[]>([
+    {
+      title: 'AI工具',
+      tools: [
+        {
+          name: 'AI对话助手',
+          path: '/ai-chat',
+          description: '与大语言模型进行对话，支持自定义API配置',
+        },
+      ],
+    },
     {
       title: 'JSON工具',
       tools: [

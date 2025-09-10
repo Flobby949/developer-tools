@@ -10,6 +10,12 @@ const router = createRouter({
       meta: { title: '首页 - 开发者工具集' },
     },
     {
+      path: '/ai-chat',
+      name: 'ai-chat',
+      component: () => import('../views/ai/AiChat.vue'),
+      meta: { title: 'AI对话助手 - 开发者工具集' },
+    },
+    {
       path: '/timestamp-tool',
       name: 'timestamp-tool',
       component: () => import('../views/time/TimestampTool.vue'),

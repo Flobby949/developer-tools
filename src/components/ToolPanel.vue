@@ -1,6 +1,6 @@
 <template>
   <div class="tool-panel">
-    <header class="panel-header">
+    <header v-if="showHeader" class="panel-header">
       <div class="header-content">
         <h1 class="panel-title">{{ title }}</h1>
         <p v-if="description" class="panel-description">{{ description }}</p>
@@ -11,8 +11,8 @@
         <div class="decoration-circle"></div>
       </div>
     </header>
-    
-    <div class="panel-content">
+
+    <div class="panel-content" :class="{ 'no-header': !showHeader }">
       <slot />
     </div>
   </div>
@@ -22,9 +22,12 @@
 interface Props {
   title: string
   description?: string
+  showHeader?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  showHeader: true,
+})
 </script>
 
 <style scoped>
@@ -38,7 +41,11 @@ defineProps<Props>()
 .panel-header {
   margin-bottom: var(--spacing-xl);
   position: relative;
-  background: linear-gradient(135deg, var(--color-background-soft) 0%, var(--color-background-mute) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-background-soft) 0%,
+    var(--color-background-mute) 100%
+  );
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   border: 1px solid var(--color-border);
@@ -118,6 +125,10 @@ defineProps<Props>()
   position: relative;
 }
 
+.panel-content.no-header {
+  gap: 0;
+}
+
 .panel-content::before {
   content: '';
   position: absolute;
@@ -129,6 +140,10 @@ defineProps<Props>()
   background: var(--gradient-primary);
   border-radius: 2px;
   opacity: 0.3;
+}
+
+.panel-content.no-header::before {
+  display: none;
 }
 
 /* 动画效果 */
@@ -144,7 +159,8 @@ defineProps<Props>()
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
@@ -162,15 +178,15 @@ defineProps<Props>()
     flex-direction: column;
     text-align: center;
   }
-  
+
   .panel-title {
     font-size: 2rem;
   }
-  
+
   .panel-description {
     font-size: 1rem;
   }
-  
+
   .header-decoration {
     margin-top: var(--spacing);
     justify-content: center;
