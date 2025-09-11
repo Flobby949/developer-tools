@@ -1,5 +1,5 @@
 <template>
-  <div class="app-layout" :class="{ dark: appStore.theme === 'dark' }">
+  <div class="app-layout">
     <!-- 移动端菜单按钮 -->
     <button v-if="isMobile" @click="toggleMobileSidebar" class="mobile-menu-btn">☰</button>
 
@@ -18,9 +18,9 @@
         <button
           class="theme-toggle"
           @click="appStore.toggleTheme"
-          :title="appStore.theme === 'light' ? '切换到深色模式' : '切换到浅色模式'"
+          :title="appStore.getThemeDisplayName()"
         >
-          {{ appStore.theme === 'light' ? '🌙' : '☀️' }}
+          {{ appStore.getThemeIcon() }}
         </button>
       </div>
 

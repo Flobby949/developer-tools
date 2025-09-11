@@ -1,5 +1,5 @@
 <template>
-  <div class="home-page" :class="{ dark: appStore.theme === 'dark' }">
+  <div class="home-page">
     <!-- 顶部导航栏 -->
     <header class="top-header">
       <div class="header-content">
@@ -17,9 +17,9 @@
           <button
             class="theme-toggle-btn"
             @click="appStore.toggleTheme"
-            :title="appStore.theme === 'light' ? '切换到深色模式' : '切换到浅色模式'"
+            :title="appStore.getThemeDisplayName()"
           >
-            <span class="theme-icon">{{ appStore.theme === 'light' ? '🌙' : '☀️' }}</span>
+            <span class="theme-icon">{{ appStore.getThemeIcon() }}</span>
           </button>
         </div>
       </div>

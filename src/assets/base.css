@@ -93,9 +93,9 @@
   --section-gap: 160px;
 }
 
-/* 深色模式 */
+/* 深色模式 - 仅在自动模式下生效 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.theme-light):not(.theme-dark) {
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
@@ -114,7 +114,27 @@
   }
 }
 
-/* 手动深色模式类 */
+/* 手动浅色模式类 - 高优先级 */
+.theme-light {
+  --color-background: var(--vt-c-white);
+  --color-background-soft: var(--vt-c-white-soft);
+  --color-background-mute: var(--vt-c-white-mute);
+  --color-background-dim: var(--vt-c-white-dim);
+
+  --color-border: var(--vt-c-divider-light-2);
+  --color-border-hover: var(--vt-c-divider-light-1);
+
+  --color-heading: var(--vt-c-text-light-1);
+  --color-text: var(--vt-c-text-light-1);
+  --color-text-light: var(--vt-c-text-light-2);
+  --color-text-lighter: var(--vt-c-text-light-3);
+
+  --color-primary-hover: #0d9568;
+  --color-danger-hover: #dc2626;
+}
+
+/* 手动深色模式类 - 高优先级 */
+.theme-dark,
 .dark {
   --color-background: var(--vt-c-black);
   --color-background-soft: var(--vt-c-black-soft);

@@ -1,13 +1,103 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { ToolCategory } from '@/types'
+
+// 主题持久化的键名
+const THEME_STORAGE_KEY = 'developer-tools-theme'
+const THEME_PREFERENCE_KEY = 'developer-tools-theme-preference' // 用户主题偏好：'auto' | 'light' | 'dark'
+
+// 检测系统主题
+const getSystemTheme = (): 'light' | 'dark' => {
+  if (typeof window === 'undefined') return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+// 从 localStorage 读取用户主题偏好
+const getThemePreference = (): 'auto' | 'light' | 'dark' => {
+  try {
+    const stored = localStorage.getItem(THEME_PREFERENCE_KEY)
+    return stored === 'auto' || stored === 'light' || stored === 'dark' ? stored : 'auto'
+  } catch {
+    return 'auto'
+  }
+}
+
+// 根据用户偏好计算实际主题
+const getActualTheme = (preference: 'auto' | 'light' | 'dark'): 'light' | 'dark' => {
+  if (preference === 'auto') {
+    return getSystemTheme()
+  }
+  return preference
+}
+
+// 保存主题设置到 localStorage
+const saveTheme = (theme: 'light' | 'dark') => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  } catch {
+    // 忽略存储错误（如隐私模式）
+  }
+}
+
+// 保存用户主题偏好
+const saveThemePreference = (preference: 'auto' | 'light' | 'dark') => {
+  try {
+    localStorage.setItem(THEME_PREFERENCE_KEY, preference)
+  } catch {
+    // 忽略存储错误（如隐私模式）
+  }
+}
+
+// 更新页面主题色
+const updateThemeColor = (theme: 'light' | 'dark') => {
+  if (typeof document === 'undefined') return
+
+  // 移除现有的theme-color meta标签
+  const existingMeta = document.querySelectorAll('meta[name="theme-color"]')
+  existingMeta.forEach((meta) => meta.remove())
+
+  // 添加新的theme-color
+  const meta = document.createElement('meta')
+  meta.name = 'theme-color'
+  meta.content = theme === 'dark' ? '#1a1a1a' : '#10b981'
+  document.head.appendChild(meta)
+}
+
+// 应用主题类到根元素
+const applyThemeClasses = (
+  preference: 'auto' | 'light' | 'dark',
+  actualTheme: 'light' | 'dark',
+) => {
+  if (typeof document === 'undefined') return
+
+  const html = document.documentElement
+
+  // 移除所有主题相关类
+  html.classList.remove('theme-light', 'theme-dark', 'dark')
+
+  // 根据用户偏好应用相应类
+  if (preference === 'light') {
+    html.classList.add('theme-light')
+  } else if (preference === 'dark') {
+    html.classList.add('theme-dark')
+  }
+  // 如果是 'auto'，不添加任何类，让系统主题生效
+
+  // 为了向后兼容，在深色主题时添加 'dark' 类
+  if (actualTheme === 'dark') {
+    html.classList.add('dark')
+  }
+}
 
 export const useAppStore = defineStore('app', () => {
   // 当前选中的工具
   const currentTool = ref('ai-chat')
 
-  // 主题设置
-  const theme = ref<'light' | 'dark'>('light')
+  // 用户主题偏好
+  const themePreference = ref<'auto' | 'light' | 'dark'>(getThemePreference())
+
+  // 实际主题 - 根据用户偏好和系统主题计算
+  const theme = ref<'light' | 'dark'>(getActualTheme(themePreference.value))
 
   // 工具分类和列表
   const toolCategories = reactive<ToolCategory[]>([
@@ -113,16 +203,94 @@ export const useAppStore = defineStore('app', () => {
     currentTool.value = tool
   }
 
-  // 切换主题
-  const toggleTheme = () => {
-    theme.value = theme.value === 'light' ? 'dark' : 'light'
+  // 设置主题偏好
+  const setThemePreference = (preference: 'auto' | 'light' | 'dark') => {
+    themePreference.value = preference
+    theme.value = getActualTheme(preference)
+    applyThemeClasses(preference, theme.value)
   }
+
+  // 切换主题（在 auto -> light -> dark -> auto 之间循环）
+  const toggleTheme = () => {
+    const preferences: Array<'auto' | 'light' | 'dark'> = ['auto', 'light', 'dark']
+    const currentIndex = preferences.indexOf(themePreference.value)
+    const nextIndex = (currentIndex + 1) % preferences.length
+    setThemePreference(preferences[nextIndex])
+  }
+
+  // 获取主题显示名称
+  const getThemeDisplayName = () => {
+    const names = {
+      auto: '跟随系统',
+      light: '浅色模式',
+      dark: '深色模式',
+    }
+    return names[themePreference.value]
+  }
+
+  // 获取主题图标
+  const getThemeIcon = () => {
+    const icons = {
+      auto: '🌐', // 地球图标表示跟随系统
+      light: '☀️', // 太阳
+      dark: '🌙', // 月亮
+    }
+    return icons[themePreference.value]
+  }
+
+  // 监听系统主题变化
+  const initSystemThemeListener = () => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleSystemThemeChange = () => {
+      if (themePreference.value === 'auto') {
+        const newTheme = getSystemTheme()
+        theme.value = newTheme
+        applyThemeClasses('auto', newTheme)
+      }
+    }
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+
+    // 初始化时也要应用主题类
+    applyThemeClasses(themePreference.value, theme.value)
+
+    // 返回清理函数
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+    }
+  }
+
+  // 监听主题偏好变化并持久化
+  watch(
+    themePreference,
+    (newPreference) => {
+      saveThemePreference(newPreference)
+    },
+    { immediate: false },
+  )
+
+  // 监听实际主题变化并更新页面主题色
+  watch(
+    theme,
+    (newTheme) => {
+      saveTheme(newTheme)
+      updateThemeColor(newTheme)
+    },
+    { immediate: true }, // 初始化时也要执行
+  )
 
   return {
     currentTool,
     theme,
+    themePreference,
     toolCategories,
     setCurrentTool,
     toggleTheme,
+    setThemePreference,
+    getThemeDisplayName,
+    getThemeIcon,
+    initSystemThemeListener,
   }
 })
