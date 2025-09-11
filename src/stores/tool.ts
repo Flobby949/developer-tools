@@ -45,6 +45,10 @@ export const useToolStore = defineStore('tool', () => {
   const jsonLanguage = ref('java')
   const jsonClassName = ref('Entity')
 
+  // 实体类转Mock数据工具相关状态
+  const entityToMockInput = ref('')
+  const entityToMockOutput = ref('')
+
   // YAML工具相关状态
   const yamlInput = ref('')
   const yamlOutput = ref('')
@@ -203,6 +207,8 @@ export const useToolStore = defineStore('tool', () => {
     jsonFormatterOutput.value = ''
     jsonToEntityInput.value = ''
     jsonToEntityOutput.value = ''
+    entityToMockInput.value = ''
+    entityToMockOutput.value = ''
     yamlInput.value = ''
     yamlOutput.value = ''
     urlEncodeInput.value = ''
@@ -249,6 +255,10 @@ export const useToolStore = defineStore('tool', () => {
     jsonToEntityOutput,
     jsonLanguage,
     jsonClassName,
+
+    // 实体类转Mock数据
+    entityToMockInput,
+    entityToMockOutput,
 
     // YAML
     yamlInput,

@@ -116,6 +116,11 @@ export const useAppStore = defineStore('app', () => {
       tools: [
         { name: 'JSON格式化', path: '/json-formatter', description: '格式化和压缩JSON字符串' },
         { name: 'JSON转实体类', path: '/json-to-entity', description: '将JSON转换为实体类代码' },
+        {
+          name: '实体类Mock数据',
+          path: '/entity-to-mock',
+          description: '将Java实体类转换为Mock数据，支持JSON和Form格式',
+        },
       ],
     },
     {

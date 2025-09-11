@@ -142,6 +142,7 @@ const getToolIcon = (toolName: string): string => {
   const iconMap: { [key: string]: string } = {
     JSON格式化: '📋',
     JSON转实体类: '🏗️',
+    实体类Mock数据: '🎲',
     YAML转Properties: '📄',
     URL编解码: '🔗',
     Base64编解码: '🔐',

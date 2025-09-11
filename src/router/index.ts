@@ -34,6 +34,12 @@ const router = createRouter({
       meta: { title: 'JSON转实体类 - 开发者工具集' },
     },
     {
+      path: '/entity-to-mock',
+      name: 'entity-to-mock',
+      component: () => import('../views/json/EntityToMock.vue'),
+      meta: { title: '实体类Mock数据 - 开发者工具集' },
+    },
+    {
       path: '/yaml',
       name: 'yaml',
       component: () => import('../views/yaml/YamlTools.vue'),
