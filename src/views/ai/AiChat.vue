@@ -12,138 +12,143 @@
           <span class="toggle-icon">{{ showConfig ? '▼' : '▶' }}</span>
         </div>
 
-        <div v-show="showConfig" class="config-form">
-          <div class="form-row">
-            <div class="form-group base-url-group">
-              <label>Base URL:</label>
-              <div class="base-url-container">
-                <select
-                  v-model="selectedBaseUrlOption"
-                  @change="onBaseUrlOptionChange"
-                  class="base-url-select"
-                >
-                  <option value="openai">OpenAI</option>
-                  <option value="claude">Claude</option>
-                  <option value="local">本地部署</option>
-                  <option value="custom">自定义</option>
-                </select>
+        <div v-show="showConfig" class="config-form-container">
+          <div class="config-form">
+            <div class="form-row">
+              <div class="form-group base-url-group">
+                <label>Base URL:</label>
+                <div class="base-url-container">
+                  <select
+                    v-model="selectedBaseUrlOption"
+                    @change="onBaseUrlOptionChange"
+                    class="base-url-select"
+                  >
+                    <option value="openai">OpenAI</option>
+                    <option value="claude">Claude</option>
+                    <option value="local">本地部署</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                  <input
+                    v-model="localConfig.baseURL"
+                    type="text"
+                    placeholder="https://api.openai.com/v1"
+                    @blur="saveConfig"
+                    class="base-url-input"
+                  />
+                </div>
+                <div class="endpoint-display">→ {{ displayEndpoint }}</div>
+              </div>
+              <div class="form-group">
+                <label>API Key:</label>
                 <input
-                  v-model="localConfig.baseURL"
-                  type="text"
-                  placeholder="https://api.openai.com/v1"
+                  v-model="localConfig.apiKey"
+                  type="password"
+                  placeholder="sk-..."
                   @blur="saveConfig"
-                  class="base-url-input"
                 />
               </div>
-              <div class="endpoint-display">→ {{ displayEndpoint }}</div>
             </div>
-            <div class="form-group">
-              <label>API Key:</label>
-              <input
-                v-model="localConfig.apiKey"
-                type="password"
-                placeholder="sk-..."
-                @blur="saveConfig"
-              />
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group model-group">
-              <label>模型:</label>
-              <div class="model-input-container">
+            <div class="form-row">
+              <div class="form-group model-group">
+                <label>模型:</label>
+                <div class="model-input-container">
+                  <input
+                    v-model="localConfig.model"
+                    type="text"
+                    placeholder="输入模型名称"
+                    @blur="saveConfig"
+                    list="model-suggestions"
+                    class="model-input"
+                  />
+                  <datalist id="model-suggestions">
+                    <option value="gpt-5">GPT-5</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                    <option value="deepseek-chat">DeepSeek</option>
+                    <option value="qwen-plus">千问-plus</option>
+                    <option value="glm-4.5">GLM-4.5</option>
+                  </datalist>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>温度 ({{ localConfig.temperature }}):</label>
                 <input
-                  v-model="localConfig.model"
-                  type="text"
-                  placeholder="输入模型名称"
+                  v-model.number="localConfig.temperature"
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  @input="saveConfig"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>最大令牌数:</label>
+                <input
+                  v-model.number="localConfig.maxTokens"
+                  type="number"
+                  min="1"
+                  max="4096"
                   @blur="saveConfig"
-                  list="model-suggestions"
-                  class="model-input"
                 />
-                <datalist id="model-suggestions">
-                  <option value="gpt-5">GPT-5</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                  <option value="deepseek-chat">DeepSeek</option>
-                  <option value="qwen-plus">千问-plus</option>
-                  <option value="glm-4.5">GLM-4.5</option>
-                </datalist>
               </div>
-            </div>
-            <div class="form-group">
-              <label>温度 ({{ localConfig.temperature }}):</label>
-              <input
-                v-model.number="localConfig.temperature"
-                type="range"
-                min="0"
-                max="2"
-                step="0.1"
-                @input="saveConfig"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>最大令牌数:</label>
-              <input
-                v-model.number="localConfig.maxTokens"
-                type="number"
-                min="1"
-                max="4096"
-                @blur="saveConfig"
-              />
-            </div>
-            <div class="form-group">
-              <label>记忆消息数 ({{ localConfig.memoryMessages }}):</label>
-              <input
-                v-model.number="localConfig.memoryMessages"
-                type="range"
-                min="0"
-                max="20"
-                step="1"
-                @input="saveConfig"
-              />
-              <div class="memory-hint">设置为0表示不保留历史消息</div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group full-width">
-              <label>系统提示:</label>
-              <textarea
-                v-model="toolStore.aiChatSystemPrompt"
-                placeholder="你是一个有用的AI助手。"
-                rows="2"
-                class="system-prompt-textarea"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="checkbox-label">
+              <div class="form-group">
+                <label>记忆消息数 ({{ localConfig.memoryMessages }}):</label>
                 <input
-                  type="checkbox"
-                  v-model="toolStore.aiChatPersistent"
-                  @change="onPersistentChange"
+                  v-model.number="localConfig.memoryMessages"
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  @input="saveConfig"
                 />
-                <span class="checkbox-text">本地持久化配置</span>
-              </label>
-              <div class="persistent-hint">
-                勾选后配置信息将被加密保存在本地浏览器中，下次打开时自动加载
+                <div class="memory-hint">设置为0表示不保留历史消息</div>
               </div>
             </div>
-          </div>
 
-          <div class="config-actions">
-            <button @click="clearConfig" class="btn-danger">清除配置</button>
-            <button @click="testConnection" :disabled="isConnecting" class="btn-primary">
-              {{ isConnecting ? '测试中...' : '测试连接' }}
-            </button>
-          </div>
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>系统提示:</label>
+                <textarea
+                  v-model="toolStore.aiChatSystemPrompt"
+                  placeholder="你是一个有用的AI助手。"
+                  rows="2"
+                  class="system-prompt-textarea"
+                ></textarea>
+              </div>
+            </div>
 
-          <div v-if="configStatus" class="config-status" :class="configStatus.type">
-            {{ configStatus.message }}
+            <div class="form-row">
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    v-model="toolStore.aiChatPersistent"
+                    @change="onPersistentChange"
+                  />
+                  <span class="checkbox-text">本地持久化配置</span>
+                </label>
+                <div class="persistent-hint">
+                  勾选后配置信息将被加密保存在本地浏览器中，下次打开时自动加载
+                </div>
+              </div>
+            </div>
+
+            <!-- 调试用：添加更多配置项来测试滚动 -->
+            <!-- 临时移除测试配置项，保持界面简洁 -->
+
+            <div class="config-actions">
+              <button @click="clearConfig" class="btn-danger">清除配置</button>
+              <button @click="testConnection" :disabled="isConnecting" class="btn-primary">
+                {{ isConnecting ? '测试中...' : '测试连接' }}
+              </button>
+            </div>
+
+            <div v-if="configStatus" class="config-status" :class="configStatus.type">
+              {{ configStatus.message }}
+            </div>
           </div>
         </div>
       </div>
@@ -828,6 +833,7 @@ function clearChat() {
   border-radius: var(--radius);
   overflow: hidden;
   transition: all 0.3s ease;
+  max-height: 65vh; /* 减少桌面端最大高度 */
 }
 
 .config-section.collapsed {
@@ -853,6 +859,37 @@ function clearChat() {
 .toggle-icon {
   transition: transform 0.3s ease;
   font-size: 0.8rem;
+}
+
+.config-form-container {
+  max-height: 60vh; /* 减少桌面端最大高度，留出更多空间 */
+  overflow-y: auto; /* 允许滚动 */
+  overflow-x: hidden; /* 隐藏水平滚动 */
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  /* 添加底部内边距，确保最后的按钮能完整显示 */
+  padding-bottom: var(--spacing);
+}
+
+/* Webkit 浏览器滚动条样式 */
+.config-form-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-form-container::-webkit-scrollbar-track {
+  background: var(--color-background-mute);
+  border-radius: 4px;
+}
+
+.config-form-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.config-form-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-light);
 }
 
 .config-form {
@@ -976,6 +1013,8 @@ function clearChat() {
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+  margin-top: var(--spacing); /* 增加顶部间距 */
+  margin-bottom: var(--spacing); /* 添加底部间距，确保按钮不被截断 */
 }
 
 .btn-primary,
@@ -1033,6 +1072,7 @@ function clearChat() {
 
 .config-status {
   margin-top: var(--spacing);
+  margin-bottom: var(--spacing); /* 添加底部间距 */
   padding: var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
@@ -1715,13 +1755,39 @@ function clearChat() {
   .config-section {
     position: relative;
     z-index: 5;
-    max-height: 50vh; /* 限制最大高度 */
-    overflow-y: auto; /* 允许内部滚动 */
+    max-height: 55vh; /* 减少移动端最大高度 */
+    overflow: hidden; /* 避免外层滚动 */
+  }
+
+  .config-form-container {
+    max-height: 50vh; /* 减少移动端的最大高度 */
+    overflow-y: auto; /* 只允许垂直滚动 */
+    overflow-x: hidden; /* 隐藏水平滚动 */
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+    /* 移动端也添加底部内边距 */
+    padding-bottom: var(--spacing);
+  }
+
+  .config-form-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .config-form-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .config-form-container::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  .config-form-container::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-light);
   }
 
   .config-form {
-    max-height: 45vh;
-    overflow-y: auto;
     padding: var(--spacing);
   }
 
@@ -1842,5 +1908,18 @@ function clearChat() {
   background: rgba(245, 158, 11, 0.1);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* 深色模式下的滚动条样式 */
+.dark .config-form-container::-webkit-scrollbar-track {
+  background: var(--color-background-soft);
+}
+
+.dark .config-form-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.dark .config-form-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-light);
 }
 </style>
