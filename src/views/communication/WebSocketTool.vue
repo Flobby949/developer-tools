@@ -529,12 +529,12 @@ function getToastIcon(type: string): string {
 }
 
 .tool-header h1 {
-  color: #2c3e50;
+  color: var(--color-heading);
   margin-bottom: 8px;
 }
 
 .tool-header p {
-  color: #7f8c8d;
+  color: var(--color-text-lighter);
   font-size: 14px;
 }
 
@@ -548,8 +548,8 @@ function getToastIcon(type: string): string {
 
 .config-panel,
 .status-panel {
-  background: #fff;
-  border: 1px solid #e1e8ed;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px;
 }
@@ -557,7 +557,7 @@ function getToastIcon(type: string): string {
 .config-panel h3,
 .status-panel h3 {
   margin: 0 0 16px 0;
-  color: #2c3e50;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
@@ -569,7 +569,7 @@ function getToastIcon(type: string): string {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -581,20 +581,22 @@ function getToastIcon(type: string): string {
 .url-input {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   transition: border-color 0.2s;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .url-input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--color-primary);
 }
 
 .url-input:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background-color: var(--color-background-mute);
+  color: var(--color-text-lighter);
 }
 
 .connect-btn {
@@ -639,7 +641,7 @@ function getToastIcon(type: string): string {
 .toggle-advanced {
   background: none;
   border: none;
-  color: #3498db;
+  color: var(--color-primary);
   cursor: pointer;
   font-size: 14px;
   display: flex;
@@ -658,7 +660,7 @@ function getToastIcon(type: string): string {
 .advanced-options {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 
 .form-row {
@@ -669,9 +671,11 @@ function getToastIcon(type: string): string {
 
 .advanced-options input {
   padding: 8px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 /* 状态面板 */
@@ -686,7 +690,7 @@ function getToastIcon(type: string): string {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #bdc3c7;
+  background: var(--color-text-lighter);
 }
 
 .status-dot.connected {
@@ -716,7 +720,7 @@ function getToastIcon(type: string): string {
 
 .status-text {
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .connection-details {
@@ -727,22 +731,22 @@ function getToastIcon(type: string): string {
   display: flex;
   justify-content: space-between;
   margin-bottom: 4px;
-  color: #7f8c8d;
+  color: var(--color-text-light);
 }
 
 .error-message {
-  color: #e74c3c;
+  color: var(--color-danger);
   font-size: 13px;
   margin-top: 8px;
   padding: 8px;
-  background: #fdf2f2;
+  background: var(--color-danger-light);
   border-radius: 4px;
 }
 
 /* 消息发送区域 */
 .message-input-section {
-  background: #fff;
-  border: 1px solid #e1e8ed;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -750,7 +754,7 @@ function getToastIcon(type: string): string {
 
 .message-form h3 {
   margin: 0 0 16px 0;
-  color: #2c3e50;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
@@ -770,9 +774,11 @@ function getToastIcon(type: string): string {
 
 .format-selector select {
   padding: 6px 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .ping-btn {
@@ -795,7 +801,7 @@ function getToastIcon(type: string): string {
 }
 
 .message-input-group {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -808,6 +814,8 @@ function getToastIcon(type: string): string {
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 14px;
   line-height: 1.4;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .message-input:focus {
@@ -819,15 +827,15 @@ function getToastIcon(type: string): string {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #f8f9fa;
-  border-top: 1px solid #ddd;
+  background: var(--color-background-soft);
+  border-top: 1px solid var(--color-border);
 }
 
 .message-info {
   display: flex;
   gap: 12px;
   font-size: 13px;
-  color: #7f8c8d;
+  color: var(--color-text-lighter);
 }
 
 .shortcut-hint {
@@ -862,8 +870,8 @@ function getToastIcon(type: string): string {
 
 .stats-panel,
 .messages-panel {
-  background: #fff;
-  border: 1px solid #e1e8ed;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px;
 }
@@ -878,20 +886,20 @@ function getToastIcon(type: string): string {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 6px;
 }
 
 .stat-value {
   font-size: 18px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-heading);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 12px;
-  color: #7f8c8d;
+  color: var(--color-text-lighter);
   text-transform: uppercase;
 }
 
@@ -905,7 +913,7 @@ function getToastIcon(type: string): string {
 
 .messages-header h3 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
@@ -920,13 +928,13 @@ function getToastIcon(type: string): string {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #7f8c8d;
+  color: var(--color-text-light);
   cursor: pointer;
 }
 
 .clear-btn {
   padding: 4px 8px;
-  background: #e74c3c;
+  background: var(--color-danger);
   color: white;
   border: none;
   border-radius: 4px;
@@ -935,26 +943,26 @@ function getToastIcon(type: string): string {
 }
 
 .clear-btn:hover {
-  background: #c0392b;
+  background: var(--color-danger-hover);
 }
 
 .messages-container {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #e1e8ed;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
 }
 
 .empty-messages {
   padding: 40px;
   text-align: center;
-  color: #7f8c8d;
+  color: var(--color-text-lighter);
   font-style: italic;
 }
 
 .message-item {
   padding: 12px;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
 }
 
@@ -963,19 +971,19 @@ function getToastIcon(type: string): string {
 }
 
 .message-item.sent {
-  background: #f0f8ff;
+  background: var(--color-primary-light);
 }
 
 .message-item.received {
-  background: #f0fff4;
+  background: var(--color-success-light);
 }
 
 .message-item.error {
-  background: #fdf2f2;
+  background: var(--color-danger-light);
 }
 
 .message-item.system {
-  background: #fafafa;
+  background: var(--color-background-mute);
 }
 
 .message-header {
@@ -995,7 +1003,7 @@ function getToastIcon(type: string): string {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #bdc3c7;
+  background: var(--color-text-lighter);
 }
 
 .type-indicator.sent {
@@ -1016,14 +1024,14 @@ function getToastIcon(type: string): string {
 
 .type-text {
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .message-meta {
   display: flex;
   gap: 8px;
   font-size: 11px;
-  color: #7f8c8d;
+  color: var(--color-text-lighter);
 }
 
 .message-content {
@@ -1041,7 +1049,7 @@ function getToastIcon(type: string): string {
 }
 
 .json-content {
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 /* Toast 通知 */
