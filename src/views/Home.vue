@@ -147,6 +147,7 @@ const getToolIcon = (toolName: string): string => {
     URL编解码: '🔗',
     Base64编解码: '🔐',
     Base64文件转换: '📁',
+    Byte字节转换: '🔢',
     MD5哈希工具: '🔒',
     SHA哈希工具: '🛡️',
     AES加解密工具: '🔐',

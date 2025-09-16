@@ -137,6 +137,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/base64-file-converter',
           description: '文件与Base64格式的相互转换',
         },
+        {
+          name: 'Byte字节转换',
+          path: '/byte-converter',
+          description: '字符串与字节数组的相互转换，支持多种编码格式',
+        },
       ],
     },
     {

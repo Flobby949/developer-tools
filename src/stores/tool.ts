@@ -62,6 +62,10 @@ export const useToolStore = defineStore('tool', () => {
   const base64EncodeInput = ref('')
   const base64EncodeOutput = ref('')
 
+  // Byte字节转换工具相关状态
+  const byteConverterInput = ref('')
+  const byteConverterOutput = ref('')
+
   // 正则工具相关状态
   const regexPattern = ref('')
   const regexText = ref('')
@@ -215,6 +219,8 @@ export const useToolStore = defineStore('tool', () => {
     urlEncodeOutput.value = ''
     base64EncodeInput.value = ''
     base64EncodeOutput.value = ''
+    byteConverterInput.value = ''
+    byteConverterOutput.value = ''
     regexPattern.value = ''
     regexText.value = ''
     regexMatches.value = []
@@ -272,6 +278,10 @@ export const useToolStore = defineStore('tool', () => {
     // Base64编码
     base64EncodeInput,
     base64EncodeOutput,
+
+    // Byte字节转换
+    byteConverterInput,
+    byteConverterOutput,
 
     // Regex
     regexPattern,

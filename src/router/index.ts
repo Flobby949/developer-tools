@@ -64,6 +64,12 @@ const router = createRouter({
       meta: { title: 'Base64文件转换 - 开发者工具集' },
     },
     {
+      path: '/byte-converter',
+      name: 'byte-converter',
+      component: () => import('../views/encode/ByteConverter.vue'),
+      meta: { title: 'Byte字节转换 - 开发者工具集' },
+    },
+    {
       path: '/regex',
       name: 'regex',
       component: () => import('../views/regex/RegexTools.vue'),
