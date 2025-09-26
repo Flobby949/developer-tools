@@ -127,6 +127,19 @@
         </div>
 
         <div class="example-card">
+          <h4>Java有符号字节数组</h4>
+          <div class="example-item">
+            <span class="example-label">Java字节数组：</span>
+            <code class="example-text">123, -28, -72, -83, 65, 66, 67</code>
+          </div>
+          <div class="example-item">
+            <span class="example-label">转换后的字符串：</span>
+            <code class="example-text">中文和英文混合</code>
+          </div>
+          <button @click="loadJavaExample" class="example-btn">使用此示例</button>
+        </div>
+
+        <div class="example-card">
           <h4>英文字符串转换</h4>
           <div class="example-item">
             <span class="example-label">字符串：</span>
@@ -191,6 +204,7 @@
             <li>空格分隔：123 45 67 89</li>
             <li>十六进制：0x7B,0x2D,0x43或7B 2D 43</li>
             <li>二进制：01111011,00101101</li>
+            <li>Java有符号字节：123,-28,-72,-83（支持-128到127）</li>
           </ul>
         </div>
         <div class="info-card">
@@ -262,6 +276,7 @@ const examples = {
   english: 'Hello World!',
   hex: '0x48,0x65,0x6C,0x6C,0x6F',
   binary: '01001000,01100101,01101100,01101100,01101111',
+  java: '123, -28, -72, -83, 65, 66, 67',
 }
 
 // 显示状态消息
@@ -411,15 +426,23 @@ const bytesToString = () => {
         })
         .filter((n: number) => !isNaN(n))
     } else {
-      // 十进制格式
+      // 十进制格式，支持Java有符号字节（-128到127）和无符号字节（0到255）
       bytes = input
         .split(/[,\s]+/)
         .map((s: string) => {
           const num = parseInt(s.trim(), 10)
-          if (isNaN(num) || num < 0 || num > 255) {
+          if (isNaN(num)) {
             throw new Error(`无效的字节值: ${s}`)
           }
-          return num
+          // 处理Java有符号字节：将-128到-1转换为128到255
+          if (num >= -128 && num <= -1) {
+            return num + 256
+          }
+          // 处理标准字节范围
+          if (num >= 0 && num <= 255) {
+            return num
+          }
+          throw new Error(`字节值超出范围: ${s} (有效范围: -128到127或0到255)`)
         })
         .filter((n: number) => !isNaN(n))
     }
@@ -497,6 +520,13 @@ const loadBinaryExample = () => {
   encoding.value = 'ascii'
   byteFormat.value = 'binary'
   showStatus('已加载二进制示例', 'info')
+}
+
+const loadJavaExample = () => {
+  toolStore.byteConverterInput = examples.java
+  conversionMode.value = 'bytesToString'
+  encoding.value = 'utf-8'
+  showStatus('已加载Java有符号字节数组示例', 'info')
 }
 </script>
 
