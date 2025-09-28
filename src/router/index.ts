@@ -40,12 +40,6 @@ const router = createRouter({
       meta: { title: '实体类Mock数据 - 开发者工具集' },
     },
     {
-      path: '/yaml',
-      name: 'yaml',
-      component: () => import('../views/yaml/YamlTools.vue'),
-      meta: { title: 'YAML工具 - 开发者工具集' },
-    },
-    {
       path: '/url-encoder',
       name: 'url-encoder',
       component: () => import('../views/encode/UrlEncoder.vue'),
@@ -70,18 +64,6 @@ const router = createRouter({
       meta: { title: 'Byte字节转换 - 开发者工具集' },
     },
     {
-      path: '/regex',
-      name: 'regex',
-      component: () => import('../views/regex/RegexTools.vue'),
-      meta: { title: '正则表达式测试 - 开发者工具集' },
-    },
-    {
-      path: '/jwt-decoder',
-      name: 'jwt-decoder',
-      component: () => import('../views/jwt/JwtDecoder.vue'),
-      meta: { title: 'JWT解析工具 - 开发者工具集' },
-    },
-    {
       path: '/md5-hasher',
       name: 'md5-hasher',
       component: () => import('../views/crypto/MD5Tool.vue'),
@@ -104,6 +86,24 @@ const router = createRouter({
       name: 'rsa-crypto',
       component: () => import('../views/crypto/RSACrypto.vue'),
       meta: { title: 'RSA加解密工具 - 开发者工具集' },
+    },
+    {
+      path: '/yaml',
+      name: 'yaml',
+      component: () => import('../views/yaml/YamlTools.vue'),
+      meta: { title: 'YAML工具 - 开发者工具集' },
+    },
+    {
+      path: '/regex',
+      name: 'regex',
+      component: () => import('../views/regex/RegexTools.vue'),
+      meta: { title: '正则表达式测试 - 开发者工具集' },
+    },
+    {
+      path: '/jwt-decoder',
+      name: 'jwt-decoder',
+      component: () => import('../views/jwt/JwtDecoder.vue'),
+      meta: { title: 'JWT解析工具 - 开发者工具集' },
     },
     {
       path: '/qrcode-tool',

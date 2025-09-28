@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!/Users/flobby/vueProject/program-tool/**)",
+      "Edit(!/Users/flobby/vueProject/program-tool/**)"
+    ],
+    "allow": [
+      "Read(/Users/flobby/vueProject/program-tool/**)",
+      "Edit(/Users/flobby/vueProject/program-tool/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}

@@ -124,10 +124,6 @@ export const useAppStore = defineStore('app', () => {
       ],
     },
     {
-      title: 'YAML工具',
-      tools: [{ name: 'YAML转Properties', path: '/yaml', description: 'YAML与Properties格式互转' }],
-    },
-    {
       title: '编码转换',
       tools: [
         { name: 'URL编解码', path: '/url-encoder', description: 'URL编码和解码' },
@@ -164,6 +160,10 @@ export const useAppStore = defineStore('app', () => {
           description: 'RSA非对称加密，支持密钥对生成',
         },
       ],
+    },
+    {
+      title: 'YAML工具',
+      tools: [{ name: 'YAML转Properties', path: '/yaml', description: 'YAML与Properties格式互转' }],
     },
     {
       title: '通信测试',
