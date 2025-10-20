@@ -1,5 +1,5 @@
 <template>
-  <ToolPanel title="Base64文件转换" description="支持图片和音频文件与Base64格式的相互转换">
+  <ToolPanel title="Base64文件转换" description="支持图片、音频、视频文件与Base64格式的相互转换">
     <!-- 操作工具栏 -->
     <div class="encode-toolbar">
       <div class="tool-group">
@@ -43,13 +43,13 @@
             <h3 v-if="!selectedFile">拖拽文件到此处或点击选择文件</h3>
             <h4 v-else>重新选择文件</h4>
             <p v-if="!selectedFile">
-              支持格式：图片 (jpg, png, gif, bmp, webp) 和音频 (mp3, wav, ogg, m4a)
+              支持格式：图片 (jpg, png, gif, bmp, webp)、音频 (mp3, wav, ogg, m4a) 和视频 (mp4, mov, webm)
             </p>
             <input
               ref="fileInput"
               type="file"
               @change="handleFileSelect"
-              accept="image/*,audio/*"
+              accept="image/*,audio/*,video/*"
               style="display: none"
             />
             <button @click="selectFile" class="btn btn-primary">
@@ -163,6 +163,14 @@
             >
               您的浏览器不支持音频播放
             </audio>
+            <video
+              v-else-if="parsedFileInfo.mimeType?.startsWith('video/')"
+              :src="previewUrl"
+              controls
+              class="preview-video"
+            >
+              您的浏览器不支持视频播放
+            </video>
           </div>
         </div>
 
@@ -253,7 +261,8 @@ const fileInput = ref<HTMLInputElement | null>(null)
 // 支持的文件类型
 const supportedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp']
 const supportedAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4']
-const supportedTypes = [...supportedImageTypes, ...supportedAudioTypes]
+const supportedVideoTypes = ['video/mp4', 'video/quicktime', 'video/webm']
+const supportedTypes = [...supportedImageTypes, ...supportedAudioTypes, ...supportedVideoTypes]
 
 // 显示状态消息
 const showStatus = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -326,7 +335,7 @@ const handleFileDrop = (event: DragEvent) => {
 // 处理选中的文件
 const processSelectedFile = (file: File) => {
   if (!isFileSupported(file)) {
-    showStatus('不支持的文件类型，请选择图片或音频文件', 'error')
+    showStatus('不支持的文件类型，请选择图片、音频或视频文件', 'error')
     return
   }
 
@@ -443,6 +452,14 @@ const detectMimeType = (bytes: Uint8Array): string => {
     return 'audio/mpeg'
   if (header.startsWith('52494646') && bytes[8] === 0x57 && bytes[9] === 0x41) return 'audio/wav'
   if (header.startsWith('4f676753')) return 'audio/ogg'
+  // WebM: EBML header
+  if (header.startsWith('1a45dfa3')) return 'video/webm'
+  // MP4/MOV: 'ftyp' at offset 4
+  if (bytes.length > 12 && bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
+    const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]).toLowerCase()
+    if (brand.includes('qt')) return 'video/quicktime'
+    return 'video/mp4'
+  }
 
   return 'application/octet-stream'
 }
@@ -459,6 +476,9 @@ const getFileExtension = (mimeType: string): string => {
     'audio/wav': '.wav',
     'audio/ogg': '.ogg',
     'audio/mp4': '.m4a',
+    'video/mp4': '.mp4',
+    'video/quicktime': '.mov',
+    'video/webm': '.webm',
   }
   return extensions[mimeType] || '.bin'
 }
