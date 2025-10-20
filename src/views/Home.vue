@@ -155,6 +155,7 @@ const getToolIcon = (toolName: string): string => {
     正则表达式测试: '🔍',
     JWT解析工具: '🔑',
     二维码工具: '📱',
+    HTML预览工具: '🌐',
   }
   return iconMap[toolName] || '🛠️'
 }

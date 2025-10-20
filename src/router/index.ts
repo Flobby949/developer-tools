@@ -129,6 +129,12 @@ const router = createRouter({
       component: () => import('../views/color/ColorPalette.vue'),
       meta: { title: '调色盘 - 开发者工具集' },
     },
+    {
+      path: '/html-preview',
+      name: 'html-preview',
+      component: () => import('../views/other/HtmlPreview.vue'),
+      meta: { title: 'HTML预览工具 - 开发者工具集' },
+    },
   ],
 })
 

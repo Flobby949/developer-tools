@@ -204,6 +204,11 @@ export const useAppStore = defineStore('app', () => {
           path: '/color-palette',
           description: '颜色选择与 HEX/RGB/HSL/HSV 等格式转换',
         },
+        {
+          name: 'HTML预览工具',
+          path: '/html-preview',
+          description: '输入HTML并在新标签页预览，含合法性校验',
+        },
       ],
     },
   ])
