@@ -6,20 +6,26 @@
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 
+// 配置marked高亮渲染器
+marked.use({
+  renderer: {
+    code({ text, lang }: { text: string; lang?: string }) {
+      const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext'
+      let highlighted: string
+      try {
+        highlighted = hljs.highlight(text, { language }).value
+      } catch {
+        highlighted = hljs.highlightAuto(text).value
+      }
+      return `<pre><code class="language-${language}">${highlighted}</code></pre>`
+    },
+  },
+})
+
 // 配置marked选项
 marked.setOptions({
   gfm: true,
   breaks: true,
-  highlight: function (code: string, lang: string) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value
-      } catch (err) {
-        console.warn('代码高亮失败:', err)
-      }
-    }
-    return hljs.highlightAuto(code).value
-  },
 })
 
 /**
@@ -126,7 +132,7 @@ export function safeRenderMarkdown(markdown: string): string {
  */
 export function setupCodeCopyFunction() {
   if (typeof window !== 'undefined') {
-    ;(window as Record<string, unknown>).copyCodeToClipboard = function (button: HTMLElement) {
+    ;(window as unknown as Record<string, unknown>).copyCodeToClipboard = function (button: HTMLElement) {
       const code = decodeURIComponent(button.getAttribute('data-code') || '')
 
       navigator.clipboard

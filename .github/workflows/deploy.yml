@@ -28,7 +28,7 @@ jobs:
         uses: easingthemes/ssh-deploy@v4
         with:
           SSH_PRIVATE_KEY: ${{ secrets.TOOLS_SSH_SECRET }}
-          REMOTE_HOST: 106.14.107.37
+          REMOTE_HOST: ${{ secrets.TOOLS_SSH_IP }}
           REMOTE_USER: deployer
           SOURCE: "dist/"
           TARGET: "/usr/share/nginx/html/tools"

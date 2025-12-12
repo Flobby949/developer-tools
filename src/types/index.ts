@@ -121,7 +121,7 @@ export interface MqttConnectionConfig {
   cleanSession: boolean
   reconnectPeriod: number
   connectTimeout: number
-  protocol: 'ws' | 'wss'
+  protocol: 'mqtt' | 'mqtts' | 'ws' | 'wss'
   maxReconnectTimes: number
 }
 
