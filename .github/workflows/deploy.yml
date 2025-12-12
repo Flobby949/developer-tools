@@ -31,9 +31,9 @@ jobs:
           REMOTE_HOST: ${{ secrets.TOOLS_SSH_IP }}
           REMOTE_USER: deployer
           SOURCE: "dist/"
-          TARGET: "/usr/share/nginx/html/tools"
+          TARGET: "/opt/tools"
           EXCLUDE: ".git, .github, node_modules"
           SCRIPT_BEFORE: |
-            rm -rf /usr/share/nginx/html/tools/*
+            rm -rf /opt/tools/*
           SCRIPT_AFTER: |
             echo "Deployed at $(date)"
