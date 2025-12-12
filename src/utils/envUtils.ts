@@ -52,14 +52,13 @@ export function getAiConfig(): AiConfig {
  * 加密/解密工具函数（使用 AES 加密）
  */
 function getEncryptionKey(): string {
-  // 使用浏览器特征生成加密密钥
-  const userAgent = navigator.userAgent
-  const screen = `${window.screen.width}x${window.screen.height}`
+  // 使用稳定的浏览器特征生成加密密钥
+  // 注意：不使用屏幕分辨率，因为换显示器会导致密钥变化
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const language = navigator.language
 
   // 组合特征并生成稳定的密钥
-  const fingerprint = `${userAgent}-${screen}-${timezone}-${language}`
+  const fingerprint = `ai-config-${timezone}-${language}`
   return CryptoJS.SHA256(fingerprint).toString().substring(0, 32)
 }
 
@@ -74,15 +73,20 @@ function encryptData(text: string): string {
   }
 }
 
-function decryptData(encryptedText: string): string {
+function decryptData(encryptedText: string): string | null {
   try {
     const key = getEncryptionKey()
     const decrypted = CryptoJS.AES.decrypt(encryptedText, key)
     const result = decrypted.toString(CryptoJS.enc.Utf8)
-    return result || encryptedText // 如果解密失败，可能是未加密的数据
+    // 如果解密结果为空，返回 null 表示解密失败
+    if (!result) {
+      console.warn('解密结果为空，可能是密钥不匹配')
+      return null
+    }
+    return result
   } catch (error) {
-    console.warn('解密失败，尝试作为未加密数据处理:', error)
-    return encryptedText
+    console.warn('解密失败:', error)
+    return null
   }
 }
 /**
@@ -95,13 +99,29 @@ function getStoredConfig(): Partial<AiConfig> {
 
     // 尝试解密
     const decrypted = decryptData(stored)
-    if (decrypted && decrypted !== stored) {
+    if (decrypted) {
       // 解密成功，解析 JSON
-      return JSON.parse(decrypted)
-    } else {
-      // 可能是未加密的旧数据，直接解析
-      return JSON.parse(stored)
+      try {
+        return JSON.parse(decrypted)
+      } catch (parseError) {
+        console.warn('解密后的数据不是有效的 JSON:', parseError)
+      }
     }
+
+    // 尝试直接解析（可能是未加密的旧数据）
+    try {
+      const parsed = JSON.parse(stored)
+      // 验证是否是有效的配置对象
+      if (typeof parsed === 'object' && parsed !== null) {
+        console.log('读取到未加密的旧配置数据')
+        return parsed
+      }
+    } catch {
+      // 既不能解密也不能解析，说明数据已损坏或密钥不匹配
+      console.warn('无法读取本地配置：数据可能已损坏或使用了不同的加密密钥')
+    }
+
+    return {}
   } catch (error) {
     console.warn('读取本地AI配置失败:', error)
     return {}
