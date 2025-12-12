@@ -156,6 +156,8 @@ const getToolIcon = (toolName: string): string => {
     JWT解析工具: '🔑',
     二维码工具: '📱',
     HTML预览工具: '🌐',
+    文本对比: '🔀',
+    文本格式化: '📝',
   }
   return iconMap[toolName] || '🛠️'
 }

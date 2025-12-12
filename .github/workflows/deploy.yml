@@ -1,0 +1,39 @@
+name: Deploy to Aliyun ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@v5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.TOOLS_SSH_SECRET }}
+          REMOTE_HOST: 106.14.107.37
+          REMOTE_USER: deployer
+          SOURCE: "dist/"
+          TARGET: "/usr/share/nginx/html/tools"
+          EXCLUDE: ".git, .github, node_modules"
+          SCRIPT_BEFORE: |
+            rm -rf /usr/share/nginx/html/tools/*
+          SCRIPT_AFTER: |
+            echo "Deployed at $(date)"

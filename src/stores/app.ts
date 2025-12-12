@@ -102,6 +102,21 @@ export const useAppStore = defineStore('app', () => {
   // 工具分类和列表
   const toolCategories = reactive<ToolCategory[]>([
     {
+      title: '图像工具',
+      tools: [
+        {
+          name: 'ICO图标生成',
+          path: '/ico-generator',
+          description: '将PNG/JPG等图片转换为ICO图标格式，支持多尺寸',
+        },
+        {
+          name: '图片压缩转换',
+          path: '/image-compressor',
+          description: '在线压缩图片、调整尺寸、转换格式，支持PNG/JPG/WebP',
+        },
+      ],
+    },
+    {
       title: 'AI工具',
       tools: [
         {
@@ -137,6 +152,11 @@ export const useAppStore = defineStore('app', () => {
           name: 'Byte字节转换',
           path: '/byte-converter',
           description: '字符串与字节数组的相互转换，支持多种编码格式',
+        },
+        {
+          name: 'Unicode编解码',
+          path: '/unicode-encoder',
+          description: 'Unicode编码和解码，支持多种Unicode格式转换',
         },
       ],
     },
@@ -177,6 +197,21 @@ export const useAppStore = defineStore('app', () => {
           name: 'MQTT测试工具',
           path: '/mqtt-tool',
           description: '测试 MQTT 连接、发布/订阅与性能统计',
+        },
+      ],
+    },
+    {
+      title: '文本工具',
+      tools: [
+        {
+          name: '文本对比',
+          path: '/text-diff',
+          description: '比较两段文本的差异，类似于 diff 功能',
+        },
+        {
+          name: '文本格式化',
+          path: '/text-formatter',
+          description: '去空格、去换行、大小写转换、驼峰/下划线命名转换',
         },
       ],
     },

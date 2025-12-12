@@ -64,6 +64,12 @@ const router = createRouter({
       meta: { title: 'Byte字节转换 - 开发者工具集' },
     },
     {
+      path: '/unicode-encoder',
+      name: 'unicode-encoder',
+      component: () => import('../views/encode/UnicodeEncoder.vue'),
+      meta: { title: 'Unicode编解码 - 开发者工具集' },
+    },
+    {
       path: '/md5-hasher',
       name: 'md5-hasher',
       component: () => import('../views/crypto/MD5Tool.vue'),
@@ -134,6 +140,35 @@ const router = createRouter({
       name: 'html-preview',
       component: () => import('../views/other/HtmlPreview.vue'),
       meta: { title: 'HTML预览工具 - 开发者工具集' },
+    },
+    {
+      path: '/ico-generator',
+      name: 'ico-generator',
+      component: () => import('../views/image/IcoGenerator.vue'),
+      meta: { title: 'ICO图标生成 - 开发者工具集' },
+    },
+    {
+      path: '/image-compressor',
+      name: 'image-compressor',
+      component: () => import('../views/image/ImageCompressor.vue'),
+      meta: { title: '图片压缩转换 - 开发者工具集' },
+    },
+    {
+      path: '/text-tools',
+      name: 'text-tools',
+      redirect: '/text-diff',
+    },
+    {
+      path: '/text-diff',
+      name: 'text-diff',
+      component: () => import('../views/text/TextDiff.vue'),
+      meta: { title: '文本对比 - 开发者工具集' },
+    },
+    {
+      path: '/text-formatter',
+      name: 'text-formatter',
+      component: () => import('../views/text/TextFormatter.vue'),
+      meta: { title: '文本格式化 - 开发者工具集' },
     },
   ],
 })
