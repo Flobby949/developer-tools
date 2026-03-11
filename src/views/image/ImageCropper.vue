@@ -25,106 +25,144 @@
       @error="showToast($event, 'error')"
     />
 
-    <!-- 裁切设置 -->
-    <div v-if="sourceFile" class="settings-section">
-      <h3>裁切设置</h3>
+    <!-- 主工作区：左右布局 -->
+    <div v-if="sourceFile" class="main-workspace">
+      <!-- 左侧：裁切设置 -->
+      <div class="settings-section">
+        <h3>裁切设置</h3>
 
-      <!-- 裁切比例 -->
-      <div class="setting-item">
-        <label class="setting-label">裁切比例</label>
-        <div class="ratio-selector">
-          <button
-            v-for="ratio in CROP_RATIOS"
-            :key="ratio.label"
-            class="ratio-btn"
-            :class="{ active: selectedRatio === ratio.value }"
-            @click="selectRatio(ratio.value)"
-          >
-            {{ ratio.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 精确数值输入 -->
-      <div class="setting-item">
-        <label class="setting-label">精确裁切（像素）</label>
-        <div class="crop-inputs">
-          <div class="input-group">
-            <label>X</label>
-            <input
-              type="number"
-              v-model.number="cropConfig.x"
-              min="0"
-              :max="sourceDimensions?.width"
-              @input="updateCrop"
-            />
-          </div>
-          <div class="input-group">
-            <label>Y</label>
-            <input
-              type="number"
-              v-model.number="cropConfig.y"
-              min="0"
-              :max="sourceDimensions?.height"
-              @input="updateCrop"
-            />
-          </div>
-          <div class="input-group">
-            <label>宽度</label>
-            <input
-              type="number"
-              v-model.number="cropConfig.width"
-              min="1"
-              :max="sourceDimensions?.width"
-              @input="updateCrop"
-            />
-          </div>
-          <div class="input-group">
-            <label>高度</label>
-            <input
-              type="number"
-              v-model.number="cropConfig.height"
-              min="1"
-              :max="sourceDimensions?.height"
-              @input="updateCrop"
-            />
+        <!-- 裁切比例 -->
+        <div class="setting-item">
+          <label class="setting-label">裁切比例</label>
+          <div class="ratio-selector">
+            <button
+              v-for="ratio in CROP_RATIOS"
+              :key="ratio.label"
+              class="ratio-btn"
+              :class="{ active: selectedRatio === ratio.value }"
+              :disabled="!!croppedUrl"
+              @click="selectRatio(ratio.value)"
+            >
+              {{ ratio.label }}
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- 快速操作 -->
-      <div class="setting-item">
-        <label class="setting-label">快速操作</label>
-        <div class="quick-actions">
-          <button @click="resetCrop" class="action-btn">重置</button>
-          <button @click="applyCrop" class="action-btn btn-primary">应用裁切</button>
+        <!-- 保持宽高比 -->
+        <div class="setting-item">
+          <label class="setting-label">
+            <input
+              type="checkbox"
+              v-model="maintainAspectRatio"
+              :disabled="!!croppedUrl"
+              class="aspect-ratio-checkbox"
+            />
+            <span>保持宽高比</span>
+          </label>
         </div>
-      </div>
-    </div>
 
-    <!-- 预览区域 -->
-    <div v-if="sourceFile" class="preview-section">
-      <h3>预览</h3>
-      <div class="preview-container">
-        <div class="canvas-wrapper">
-          <canvas ref="previewCanvas" class="preview-canvas"></canvas>
-          <div
-            v-if="!croppedUrl"
-            class="crop-overlay"
-            :style="{
-              left: cropConfig.x + 'px',
-              top: cropConfig.y + 'px',
-              width: cropConfig.width + 'px',
-              height: cropConfig.height + 'px',
-            }"
-          >
-            <div class="crop-info">
-              {{ cropConfig.width }} × {{ cropConfig.height }}
+        <!-- 精确数值输入 -->
+        <div class="setting-item">
+          <label class="setting-label">精确裁切（像素）</label>
+          <div class="crop-inputs">
+            <div class="input-group">
+              <label>X</label>
+              <input
+                type="number"
+                v-model.number="cropConfig.x"
+                min="0"
+                :max="sourceDimensions?.width"
+                :disabled="!!croppedUrl"
+                @input="updateCrop"
+              />
+            </div>
+            <div class="input-group">
+              <label>Y</label>
+              <input
+                type="number"
+                v-model.number="cropConfig.y"
+                min="0"
+                :max="sourceDimensions?.height"
+                :disabled="!!croppedUrl"
+                @input="updateCrop"
+              />
+            </div>
+            <div class="input-group">
+              <label>宽度</label>
+              <input
+                type="number"
+                v-model.number="cropConfig.width"
+                min="1"
+                :max="sourceDimensions?.width"
+                :disabled="!!croppedUrl"
+                @input="updateCrop"
+              />
+            </div>
+            <div class="input-group">
+              <label>高度</label>
+              <input
+                type="number"
+                v-model.number="cropConfig.height"
+                min="1"
+                :max="sourceDimensions?.height"
+                :disabled="!!croppedUrl"
+                @input="updateCrop"
+              />
             </div>
           </div>
         </div>
-        <div v-if="croppedUrl" class="cropped-preview">
-          <img :src="croppedUrl" alt="裁切结果" class="cropped-image" />
+
+        <!-- 快速操作 -->
+        <div class="setting-item">
+          <label class="setting-label">快速操作</label>
+          <div class="quick-actions">
+            <button @click="resetCrop" class="action-btn">重置</button>
+            <button @click="applyCrop" class="action-btn btn-primary" :disabled="!!croppedUrl">
+              应用裁切
+            </button>
+          </div>
+        </div>
+
+        <!-- 操作提示 -->
+        <div class="operation-hint">
+          <span class="hint-icon">💡</span>
+          <span class="hint-text">拖动裁切框移动位置，拖动边角缩放大小</span>
+        </div>
+      </div>
+
+      <!-- 右侧：预览区域 -->
+      <div class="preview-section">
+        <h3>预览</h3>
+        <div class="preview-container">
+          <div v-if="!croppedUrl" class="canvas-wrapper">
+            <canvas ref="previewCanvas" class="preview-canvas"></canvas>
+            <div
+              class="crop-overlay"
+              :style="{
+                left: displayCropBox.left + 'px',
+                top: displayCropBox.top + 'px',
+                width: displayCropBox.width + 'px',
+                height: displayCropBox.height + 'px',
+              }"
+              @mousedown="handleMouseDown"
+            >
+              <div class="crop-info">
+                {{ cropConfig.width }} × {{ cropConfig.height }}
+              </div>
+              <!-- 缩放控制点 -->
+              <div class="resize-handle resize-nw" @mousedown.stop="handleResizeStart($event, 'nw')"></div>
+              <div class="resize-handle resize-n" @mousedown.stop="handleResizeStart($event, 'n')"></div>
+              <div class="resize-handle resize-ne" @mousedown.stop="handleResizeStart($event, 'ne')"></div>
+              <div class="resize-handle resize-e" @mousedown.stop="handleResizeStart($event, 'e')"></div>
+              <div class="resize-handle resize-se" @mousedown.stop="handleResizeStart($event, 'se')"></div>
+              <div class="resize-handle resize-s" @mousedown.stop="handleResizeStart($event, 's')"></div>
+              <div class="resize-handle resize-sw" @mousedown.stop="handleResizeStart($event, 'sw')"></div>
+              <div class="resize-handle resize-w" @mousedown.stop="handleResizeStart($event, 'w')"></div>
+            </div>
+          </div>
+          <div v-if="croppedUrl" class="cropped-preview">
+            <img :src="croppedUrl" alt="裁切结果" class="cropped-image" />
+          </div>
         </div>
       </div>
     </div>
@@ -141,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import ToolPanel from '@/components/ToolPanel.vue'
 import ImageUploader from '@/components/ImageUploader.vue'
 import {
@@ -170,14 +208,26 @@ const cropConfig = ref<CropConfig>({
 })
 
 const selectedRatio = ref<number | null>(null)
+const maintainAspectRatio = ref(false) // 保持宽高比
 
 // Canvas 相关
 const previewCanvas = ref<HTMLCanvasElement>()
 const sourceImage = ref<HTMLImageElement>()
+const canvasScale = ref(1) // 预览缩放比例
+const canvasOffset = ref({ x: 0, y: 0 }) // Canvas 偏移量
 
 // 裁切结果
 const croppedUrl = ref('')
 const isProcessing = ref(false)
+
+// 拖拽状态
+const isDragging = ref(false)
+const dragStart = ref({ x: 0, y: 0 })
+
+// 缩放状态
+const isResizing = ref(false)
+const resizeDirection = ref<string>('')
+const resizeStart = ref({ x: 0, y: 0, cropX: 0, cropY: 0, cropWidth: 0, cropHeight: 0 })
 
 // Toast 通知
 const toast = ref({
@@ -254,11 +304,16 @@ const drawPreview = () => {
 
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
-  // 调整裁切框位置以匹配缩放
-  cropConfig.value.x = Math.round(cropConfig.value.x * scale)
-  cropConfig.value.y = Math.round(cropConfig.value.y * scale)
-  cropConfig.value.width = Math.round(cropConfig.value.width * scale)
-  cropConfig.value.height = Math.round(cropConfig.value.height * scale)
+  // 保存缩放比例，不修改原始 cropConfig
+  canvasScale.value = scale
+
+  // 计算 canvas 在容器中的偏移（居中显示）
+  const wrapper = canvas.parentElement
+  if (wrapper) {
+    const wrapperWidth = wrapper.clientWidth
+    canvasOffset.value.x = (wrapperWidth - canvas.width) / 2
+    canvasOffset.value.y = 0
+  }
 }
 
 // 选择比例
@@ -274,6 +329,12 @@ const selectRatio = (ratio: number | null) => {
   )
 
   cropConfig.value = config
+
+  // 选择比例时自动启用保持宽高比
+  if (ratio !== null) {
+    maintainAspectRatio.value = true
+  }
+
   croppedUrl.value = ''
 }
 
@@ -307,7 +368,13 @@ const resetCrop = () => {
     height: sourceDimensions.value.height,
   }
   selectedRatio.value = null
+  maintainAspectRatio.value = false
   croppedUrl.value = ''
+
+  // 重新绘制预览
+  nextTick(() => {
+    drawPreview()
+  })
 }
 
 // 应用裁切
@@ -357,6 +424,204 @@ const clearAll = () => {
   selectedRatio.value = null
   showToast('已清空', 'info')
 }
+
+// 计算显示用的裁切框位置和尺寸（考虑缩放和偏移）
+const displayCropBox = computed(() => {
+  const scale = canvasScale.value
+  return {
+    left: cropConfig.value.x * scale + canvasOffset.value.x,
+    top: cropConfig.value.y * scale + canvasOffset.value.y,
+    width: cropConfig.value.width * scale,
+    height: cropConfig.value.height * scale,
+  }
+})
+
+// 鼠标按下开始拖拽
+const handleMouseDown = (e: MouseEvent) => {
+  if (!previewCanvas.value) return
+
+  isDragging.value = true
+  const rect = previewCanvas.value.getBoundingClientRect()
+  const scale = canvasScale.value
+
+  // 计算鼠标在 canvas 中的位置（未缩放坐标）
+  const mouseX = (e.clientX - rect.left - canvasOffset.value.x) / scale
+  const mouseY = (e.clientY - rect.top - canvasOffset.value.y) / scale
+
+  // 记录鼠标相对于裁切框左上角的偏移
+  dragStart.value = {
+    x: mouseX - cropConfig.value.x,
+    y: mouseY - cropConfig.value.y,
+  }
+}
+
+// 鼠标移动更新裁切框位置
+const handleMouseMove = (e: MouseEvent) => {
+  // 处理缩放
+  if (isResizing.value) {
+    handleResizeMove(e)
+    return
+  }
+
+  // 处理拖拽
+  if (!isDragging.value || !previewCanvas.value || !sourceDimensions.value) return
+
+  const rect = previewCanvas.value.getBoundingClientRect()
+  const scale = canvasScale.value
+
+  // 计算鼠标在 canvas 中的位置（未缩放坐标）
+  const mouseX = (e.clientX - rect.left - canvasOffset.value.x) / scale
+  const mouseY = (e.clientY - rect.top - canvasOffset.value.y) / scale
+
+  // 计算新的裁切框位置（保持鼠标相对位置不变）
+  const newX = mouseX - dragStart.value.x
+  const newY = mouseY - dragStart.value.y
+
+  // 限制在图片范围内
+  cropConfig.value.x = Math.max(
+    0,
+    Math.min(newX, sourceDimensions.value.width - cropConfig.value.width)
+  )
+  cropConfig.value.y = Math.max(
+    0,
+    Math.min(newY, sourceDimensions.value.height - cropConfig.value.height)
+  )
+
+  croppedUrl.value = ''
+}
+
+// 鼠标松开结束拖拽
+const handleMouseUp = () => {
+  isDragging.value = false
+  isResizing.value = false
+}
+
+// 开始缩放
+const handleResizeStart = (e: MouseEvent, direction: string) => {
+  if (!previewCanvas.value) return
+
+  isResizing.value = true
+  resizeDirection.value = direction
+
+  const rect = previewCanvas.value.getBoundingClientRect()
+  const scale = canvasScale.value
+
+  // 记录鼠标起始位置和裁切框初始状态
+  resizeStart.value = {
+    x: e.clientX,
+    y: e.clientY,
+    cropX: cropConfig.value.x,
+    cropY: cropConfig.value.y,
+    cropWidth: cropConfig.value.width,
+    cropHeight: cropConfig.value.height,
+  }
+}
+
+// 缩放移动
+const handleResizeMove = (e: MouseEvent) => {
+  if (!isResizing.value || !previewCanvas.value || !sourceDimensions.value) return
+
+  const scale = canvasScale.value
+  const deltaX = (e.clientX - resizeStart.value.x) / scale
+  const deltaY = (e.clientY - resizeStart.value.y) / scale
+
+  const direction = resizeDirection.value
+  let newX = resizeStart.value.cropX
+  let newY = resizeStart.value.cropY
+  let newWidth = resizeStart.value.cropWidth
+  let newHeight = resizeStart.value.cropHeight
+
+  // 根据方向调整裁切框
+  if (direction.includes('n')) {
+    newY = resizeStart.value.cropY + deltaY
+    newHeight = resizeStart.value.cropHeight - deltaY
+  }
+  if (direction.includes('s')) {
+    newHeight = resizeStart.value.cropHeight + deltaY
+  }
+  if (direction.includes('w')) {
+    newX = resizeStart.value.cropX + deltaX
+    newWidth = resizeStart.value.cropWidth - deltaX
+  }
+  if (direction.includes('e')) {
+    newWidth = resizeStart.value.cropWidth + deltaX
+  }
+
+  // 保持宽高比
+  if (maintainAspectRatio.value && resizeStart.value.cropWidth > 0 && resizeStart.value.cropHeight > 0) {
+    const aspectRatio = resizeStart.value.cropWidth / resizeStart.value.cropHeight
+
+    if (direction === 'n' || direction === 's') {
+      // 垂直调整，根据高度计算宽度
+      newWidth = newHeight * aspectRatio
+      if (direction === 'n') {
+        newX = resizeStart.value.cropX - (newWidth - resizeStart.value.cropWidth) / 2
+      }
+    } else if (direction === 'e' || direction === 'w') {
+      // 水平调整，根据宽度计算高度
+      newHeight = newWidth / aspectRatio
+      if (direction === 'w') {
+        newY = resizeStart.value.cropY - (newHeight - resizeStart.value.cropHeight) / 2
+      }
+    } else {
+      // 角落调整
+      if (direction === 'nw' || direction === 'se') {
+        // 左上或右下，以宽度为准
+        newHeight = newWidth / aspectRatio
+        if (direction === 'nw') {
+          newY = resizeStart.value.cropY + resizeStart.value.cropHeight - newHeight
+        }
+      } else {
+        // 右上或左下，以宽度为准
+        newHeight = newWidth / aspectRatio
+        if (direction === 'ne') {
+          newY = resizeStart.value.cropY + resizeStart.value.cropHeight - newHeight
+        }
+      }
+    }
+  }
+
+  // 限制最小尺寸
+  const minSize = 10
+  if (newWidth < minSize) {
+    if (direction.includes('w')) {
+      newX = resizeStart.value.cropX + resizeStart.value.cropWidth - minSize
+    }
+    newWidth = minSize
+  }
+  if (newHeight < minSize) {
+    if (direction.includes('n')) {
+      newY = resizeStart.value.cropY + resizeStart.value.cropHeight - minSize
+    }
+    newHeight = minSize
+  }
+
+  // 限制在图片范围内
+  newX = Math.max(0, Math.min(newX, sourceDimensions.value.width - newWidth))
+  newY = Math.max(0, Math.min(newY, sourceDimensions.value.height - newHeight))
+  newWidth = Math.max(minSize, Math.min(newWidth, sourceDimensions.value.width - newX))
+  newHeight = Math.max(minSize, Math.min(newHeight, sourceDimensions.value.height - newY))
+
+  // 更新裁切配置
+  cropConfig.value.x = Math.round(newX)
+  cropConfig.value.y = Math.round(newY)
+  cropConfig.value.width = Math.round(newWidth)
+  cropConfig.value.height = Math.round(newHeight)
+
+  croppedUrl.value = ''
+}
+
+// 监听全局鼠标事件
+onMounted(() => {
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mouseup', handleMouseUp)
+})
+
+// 清理事件监听
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mouseup', handleMouseUp)
+})
 </script>
 
 <style scoped>
@@ -424,11 +689,18 @@ const clearAll = () => {
   font-size: 1.125rem;
 }
 
-.settings-section {
+.main-workspace {
+  display: flex;
+  gap: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.settings-section {
+  flex: 0 0 320px;
   padding: 1.5rem;
   background: var(--color-background-soft);
   border-radius: 12px;
+  height: fit-content;
 }
 
 .settings-section h3 {
@@ -452,6 +724,19 @@ const clearAll = () => {
   color: var(--color-text);
 }
 
+.aspect-ratio-checkbox {
+  margin-right: 0.5rem;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.aspect-ratio-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .ratio-selector {
   display: flex;
   flex-wrap: wrap;
@@ -459,7 +744,7 @@ const clearAll = () => {
 }
 
 .ratio-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   border: 2px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-background);
@@ -469,8 +754,13 @@ const clearAll = () => {
   transition: all 0.2s;
 }
 
-.ratio-btn:hover {
+.ratio-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
+}
+
+.ratio-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ratio-btn.active {
@@ -481,8 +771,8 @@ const clearAll = () => {
 
 .crop-inputs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
 .input-group {
@@ -505,6 +795,11 @@ const clearAll = () => {
   font-size: 0.9375rem;
 }
 
+.input-group input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .quick-actions {
   display: flex;
   gap: 0.75rem;
@@ -521,12 +816,39 @@ const clearAll = () => {
   transition: all 0.2s;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
 }
 
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.operation-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.hint-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.hint-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
 .preview-section {
-  margin-bottom: 2rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .preview-section h3 {
@@ -542,6 +864,7 @@ const clearAll = () => {
   padding: 2rem;
   background: var(--color-background-soft);
   border-radius: 12px;
+  min-height: 500px;
 }
 
 .canvas-wrapper {
@@ -559,7 +882,17 @@ const clearAll = () => {
   position: absolute;
   border: 2px solid var(--color-primary);
   background: rgba(16, 185, 129, 0.1);
-  pointer-events: none;
+  cursor: move;
+  user-select: none;
+}
+
+.crop-overlay:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--color-primary-dark);
+}
+
+.crop-overlay:active {
+  cursor: grabbing;
 }
 
 .crop-info {
@@ -572,6 +905,73 @@ const clearAll = () => {
   font-size: 0.75rem;
   border-radius: 4px;
   white-space: nowrap;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.resize-handle:hover {
+  background: var(--color-primary);
+  transform: scale(1.2);
+}
+
+.resize-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.resize-n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.resize-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.resize-e {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.resize-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.resize-s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.resize-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.resize-w {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: w-resize;
 }
 
 .cropped-preview {
@@ -659,6 +1059,37 @@ const clearAll = () => {
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* 响应式布局 */
+@media (max-width: 1024px) {
+  .main-workspace {
+    flex-direction: column;
+  }
+
+  .settings-section {
+    flex: 1;
+    width: 100%;
+  }
+
+  .crop-inputs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .crop-inputs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ratio-selector {
+    gap: 0.375rem;
+  }
+
+  .ratio-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
   }
 }
 </style>
