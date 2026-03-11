@@ -280,7 +280,15 @@ async function processWatermarks() {
       selectedRegionIds.value.has(r.id)
     )
     for (const region of selectedRegions) {
-      imageData = eraseArea(imageData, region)
+      // 转换为 RemovalArea 类型
+      const removalArea = {
+        x: region.x,
+        y: region.y,
+        width: region.width,
+        height: region.height,
+        tool: 'erase' as const
+      }
+      imageData = eraseArea(imageData, removalArea)
     }
 
     // 写回canvas
@@ -336,7 +344,7 @@ function clearAll() {
   currentStep.value = 'uploaded'
 
   if (uploaderRef.value) {
-    uploaderRef.value.reset()
+    uploaderRef.value.clear()
   }
 }
 
