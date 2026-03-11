@@ -154,6 +154,24 @@ const router = createRouter({
       meta: { title: '图片压缩转换 - 开发者工具集' },
     },
     {
+      path: '/watermark-remover',
+      name: 'watermark-remover',
+      component: () => import('../views/image/WatermarkRemover.vue'),
+      meta: { title: '去水印工具 - 开发者工具集' },
+    },
+    {
+      path: '/watermark-adder',
+      name: 'watermark-adder',
+      component: () => import('../views/image/WatermarkAdder.vue'),
+      meta: { title: '加水印工具 - 开发者工具集' },
+    },
+    {
+      path: '/image-cropper',
+      name: 'image-cropper',
+      component: () => import('../views/image/ImageCropper.vue'),
+      meta: { title: '图片裁切工具 - 开发者工具集' },
+    },
+    {
       path: '/text-tools',
       name: 'text-tools',
       redirect: '/text-diff',
