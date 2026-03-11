@@ -14,7 +14,7 @@ export const DEFAULT_DETECTION_CONFIG: DetectionConfig = {
   sensitivity: 0.5,
   minRegionSize: 20,
   maxRegionSize: 500,
-  confidenceThreshold: 0.6
+  confidenceThreshold: 0.3
 }
 
 /**
@@ -141,9 +141,16 @@ export class FrontendDetector implements IWatermarkDetector {
         const positionWeight = 1 - (distToCenter / maxDist) * 0.5
 
         // 计算置信度
-        const varianceScore = variance < 1000 ? 0.5 : 0
-        const edgeScore = edgeDensity > 0.3 ? 0.3 : 0
-        let confidence = (varianceScore + edgeScore) * positionWeight * config.sensitivity
+        // 文字水印特征：低方差（颜色一致）+ 高边缘密度（文字轮廓）
+        const varianceScore = variance < 2000 ? 0.4 : 0
+        const edgeScore = edgeDensity > 0.15 ? 0.5 : edgeDensity > 0.05 ? 0.3 : 0
+
+        // 文字水印通常在边缘或角落
+        const isCornerOrEdge =
+          (x < width * 0.2 || x > width * 0.8 || y < height * 0.2 || y > height * 0.8)
+        const locationBonus = isCornerOrEdge ? 0.2 : 0
+
+        let confidence = (varianceScore + edgeScore + locationBonus) * config.sensitivity
 
         // 过滤低置信度区域
         if (confidence >= config.confidenceThreshold) {

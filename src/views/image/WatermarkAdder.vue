@@ -636,6 +636,7 @@ watch(watermarkType, () => {
   border: 2px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-background);
+  color: var(--color-text);
   font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.2s;

@@ -10,10 +10,10 @@
         <button
           @click="detectWatermarks"
           class="btn btn-primary"
-          :disabled="!sourceFile || isDetecting || currentStep !== 'uploaded'"
+          :disabled="!sourceFile || isDetecting"
         >
           <span class="btn-icon">🔍</span>
-          {{ isDetecting ? '检测中...' : '检测水印' }}
+          {{ isDetecting ? '检测中...' : (currentStep === 'detected' ? '重新检测' : '检测水印') }}
         </button>
         <button
           @click="processWatermarks"
@@ -56,7 +56,7 @@
             max="1"
             step="0.1"
             class="slider"
-            :disabled="currentStep !== 'uploaded'"
+            :disabled="!sourceFile || isDetecting"
           />
         </div>
 
@@ -119,6 +119,7 @@ import { loadImage, eraseArea, downloadBlob } from '@/utils/imageUtils'
 // 组件状态
 const sourceFile = ref<File | null>(null)
 const sourceImage = ref<HTMLImageElement | null>(null)
+const originalImage = ref<HTMLImageElement | null>(null) // 保存原始图片
 const sourceDimensions = ref<{ width: number; height: number } | null>(null)
 
 const isDetecting = ref(false)
@@ -143,6 +144,7 @@ async function handleFileSelected(file: File) {
     sourceFile.value = file
     const img = await loadImage(file)
     sourceImage.value = img
+    originalImage.value = img // 保存原始图片引用
     sourceDimensions.value = { width: img.width, height: img.height }
 
     currentStep.value = 'uploaded'
@@ -198,19 +200,22 @@ function drawPreview() {
 
 // 检测水印
 async function detectWatermarks() {
-  if (!sourceImage.value) return
+  if (!originalImage.value) return
 
   isDetecting.value = true
 
   try {
+    // 重置为原始图片
+    sourceImage.value = originalImage.value
+
     // 创建临时canvas获取ImageData
     const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = sourceImage.value.width
-    tempCanvas.height = sourceImage.value.height
+    tempCanvas.width = originalImage.value.width
+    tempCanvas.height = originalImage.value.height
     const ctx = tempCanvas.getContext('2d')
     if (!ctx) throw new Error('Canvas context creation failed')
 
-    ctx.drawImage(sourceImage.value, 0, 0)
+    ctx.drawImage(originalImage.value, 0, 0)
     const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
 
     // 执行检测
@@ -336,6 +341,7 @@ function downloadResult() {
 function clearAll() {
   sourceFile.value = null
   sourceImage.value = null
+  originalImage.value = null
   sourceDimensions.value = null
   detectedRegions.value = []
   selectedRegionIds.value.clear()
