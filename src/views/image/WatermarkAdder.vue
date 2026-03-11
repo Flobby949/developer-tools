@@ -60,207 +60,214 @@
       </div>
     </div>
 
-    <!-- 水印配置 -->
-    <div v-if="sourceFile" class="settings-section">
-      <h3>水印配置</h3>
+    <!-- 两栏布局 -->
+    <div v-if="sourceFile" class="two-column-layout">
+      <!-- 左侧配置区 -->
+      <div class="config-panel">
+        <h3>水印配置</h3>
 
-      <!-- 水印类型选择 -->
-      <div class="setting-item">
-        <label class="setting-label">水印类型</label>
-        <div class="watermark-type-selector">
-          <button
-            class="type-btn"
-            :class="{ active: watermarkType === 'text' }"
-            @click="watermarkType = 'text'"
-          >
-            📝 文字水印
-          </button>
-          <button
-            class="type-btn"
-            :class="{ active: watermarkType === 'image' }"
-            @click="watermarkType = 'image'"
-          >
-            🖼️ 图片水印
-          </button>
+        <!-- 水印类型选择 -->
+        <div class="setting-item">
+          <label class="setting-label">水印类型</label>
+          <div class="watermark-type-selector">
+            <button
+              class="type-btn"
+              :class="{ active: watermarkType === 'text' }"
+              @click="watermarkType = 'text'"
+            >
+              📝 文字
+            </button>
+            <button
+              class="type-btn"
+              :class="{ active: watermarkType === 'image' }"
+              @click="watermarkType = 'image'"
+            >
+              🖼️ 图片
+            </button>
+          </div>
+        </div>
+
+        <!-- 文字水印配置 -->
+        <template v-if="watermarkType === 'text'">
+          <div class="setting-item">
+            <label class="setting-label">水印文字</label>
+            <input
+              type="text"
+              v-model="textConfig.text"
+              placeholder="输入水印文字"
+              class="text-input"
+              @input="updatePreview"
+            />
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">
+              字体大小
+              <span class="setting-value">{{ textConfig.fontSize }}px</span>
+            </label>
+            <input
+              type="range"
+              v-model.number="textConfig.fontSize"
+              min="12"
+              max="120"
+              step="2"
+              class="slider"
+              @input="updatePreview"
+            />
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">字体</label>
+            <select v-model="textConfig.fontFamily" class="select-input" @change="updatePreview">
+              <option value="Arial">Arial</option>
+              <option value="'Microsoft YaHei'">微软雅黑</option>
+              <option value="'SimHei'">黑体</option>
+              <option value="'SimSun'">宋体</option>
+              <option value="'KaiTi'">楷体</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">颜色</label>
+            <input
+              type="color"
+              v-model="textConfig.color"
+              class="color-input"
+              @input="updatePreview"
+            />
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">
+              透明度
+              <span class="setting-value">{{ Math.round(textConfig.opacity * 100) }}%</span>
+            </label>
+            <input
+              type="range"
+              v-model.number="textConfig.opacity"
+              min="0"
+              max="1"
+              step="0.05"
+              class="slider"
+              @input="updatePreview"
+            />
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">
+              旋转角度
+              <span class="setting-value">{{ textConfig.rotation }}°</span>
+            </label>
+            <input
+              type="range"
+              v-model.number="textConfig.rotation"
+              min="-45"
+              max="45"
+              step="5"
+              class="slider"
+              @input="updatePreview"
+            />
+          </div>
+        </template>
+
+        <!-- 图片水印配置 -->
+        <template v-if="watermarkType === 'image'">
+          <div class="setting-item">
+            <label class="setting-label">水印图片</label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              @change="handleWatermarkFileSelect"
+              class="file-input"
+            />
+            <p v-if="watermarkFile" class="file-info">
+              {{ watermarkFile.name }} ({{ formatFileSize(watermarkFile.size) }})
+            </p>
+          </div>
+
+          <div v-if="watermarkFile" class="setting-item">
+            <label class="setting-label">
+              缩放比例
+              <span class="setting-value">{{ Math.round(imageConfig.scale * 100) }}%</span>
+            </label>
+            <input
+              type="range"
+              v-model.number="imageConfig.scale"
+              min="0.1"
+              max="1"
+              step="0.05"
+              class="slider"
+              @input="updatePreview"
+            />
+          </div>
+
+          <div v-if="watermarkFile" class="setting-item">
+            <label class="setting-label">
+              透明度
+              <span class="setting-value">{{ Math.round(imageConfig.opacity * 100) }}%</span>
+            </label>
+            <input
+              type="range"
+              v-model.number="imageConfig.opacity"
+              min="0"
+              max="1"
+              step="0.05"
+              class="slider"
+              @input="updatePreview"
+            />
+          </div>
+        </template>
+
+        <!-- 通用配置 -->
+        <div class="setting-item">
+          <label class="setting-label">位置</label>
+          <div class="position-grid">
+            <button
+              v-for="pos in positions"
+              :key="pos.value"
+              class="position-btn"
+              :class="{ active: currentPosition === pos.value }"
+              @click="setPosition(pos.value)"
+            >
+              {{ pos.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" v-model="tiledMode" @change="updatePreview" />
+            平铺模式
+          </label>
+        </div>
+
+        <div v-if="tiledMode" class="setting-item">
+          <label class="setting-label">
+            间距
+            <span class="setting-value">{{ spacing }}px</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="spacing"
+            min="20"
+            max="200"
+            step="10"
+            class="slider"
+            @input="updatePreview"
+          />
         </div>
       </div>
 
-      <!-- 文字水印配置 -->
-      <template v-if="watermarkType === 'text'">
-        <div class="setting-item">
-          <label class="setting-label">水印文字</label>
-          <input
-            type="text"
-            v-model="textConfig.text"
-            placeholder="输入水印文字"
-            class="text-input"
-            @input="updatePreview"
-          />
+      <!-- 右侧预览区 -->
+      <div class="preview-panel">
+        <h3>预览效果</h3>
+        <div v-if="previewUrl" class="preview-container">
+          <img :src="previewUrl" alt="预览" class="preview-image" />
         </div>
-
-        <div class="setting-item">
-          <label class="setting-label">
-            字体大小
-            <span class="setting-value">{{ textConfig.fontSize }}px</span>
-          </label>
-          <input
-            type="range"
-            v-model.number="textConfig.fontSize"
-            min="12"
-            max="120"
-            step="2"
-            class="slider"
-            @input="updatePreview"
-          />
+        <div v-else class="preview-placeholder">
+          <span class="placeholder-icon">👁️</span>
+          <p>调整配置后将显示预览</p>
         </div>
-
-        <div class="setting-item">
-          <label class="setting-label">字体</label>
-          <select v-model="textConfig.fontFamily" class="select-input" @change="updatePreview">
-            <option value="Arial">Arial</option>
-            <option value="'Microsoft YaHei'">微软雅黑</option>
-            <option value="'SimHei'">黑体</option>
-            <option value="'SimSun'">宋体</option>
-            <option value="'KaiTi'">楷体</option>
-          </select>
-        </div>
-
-        <div class="setting-item">
-          <label class="setting-label">颜色</label>
-          <input
-            type="color"
-            v-model="textConfig.color"
-            class="color-input"
-            @input="updatePreview"
-          />
-        </div>
-
-        <div class="setting-item">
-          <label class="setting-label">
-            透明度
-            <span class="setting-value">{{ Math.round(textConfig.opacity * 100) }}%</span>
-          </label>
-          <input
-            type="range"
-            v-model.number="textConfig.opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            class="slider"
-            @input="updatePreview"
-          />
-        </div>
-
-        <div class="setting-item">
-          <label class="setting-label">
-            旋转角度
-            <span class="setting-value">{{ textConfig.rotation }}°</span>
-          </label>
-          <input
-            type="range"
-            v-model.number="textConfig.rotation"
-            min="-45"
-            max="45"
-            step="5"
-            class="slider"
-            @input="updatePreview"
-          />
-        </div>
-      </template>
-
-      <!-- 图片水印配置 -->
-      <template v-if="watermarkType === 'image'">
-        <div class="setting-item">
-          <label class="setting-label">水印图片</label>
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            @change="handleWatermarkFileSelect"
-            class="file-input"
-          />
-          <p v-if="watermarkFile" class="file-info">
-            {{ watermarkFile.name }} ({{ formatFileSize(watermarkFile.size) }})
-          </p>
-        </div>
-
-        <div v-if="watermarkFile" class="setting-item">
-          <label class="setting-label">
-            缩放比例
-            <span class="setting-value">{{ Math.round(imageConfig.scale * 100) }}%</span>
-          </label>
-          <input
-            type="range"
-            v-model.number="imageConfig.scale"
-            min="0.1"
-            max="1"
-            step="0.05"
-            class="slider"
-            @input="updatePreview"
-          />
-        </div>
-
-        <div v-if="watermarkFile" class="setting-item">
-          <label class="setting-label">
-            透明度
-            <span class="setting-value">{{ Math.round(imageConfig.opacity * 100) }}%</span>
-          </label>
-          <input
-            type="range"
-            v-model.number="imageConfig.opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            class="slider"
-            @input="updatePreview"
-          />
-        </div>
-      </template>
-
-      <!-- 通用配置 -->
-      <div class="setting-item">
-        <label class="setting-label">位置</label>
-        <div class="position-grid">
-          <button
-            v-for="pos in positions"
-            :key="pos.value"
-            class="position-btn"
-            :class="{ active: currentPosition === pos.value }"
-            @click="setPosition(pos.value)"
-          >
-            {{ pos.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label class="setting-label">
-          <input type="checkbox" v-model="tiledMode" @change="updatePreview" />
-          平铺模式
-        </label>
-      </div>
-
-      <div v-if="tiledMode" class="setting-item">
-        <label class="setting-label">
-          间距
-          <span class="setting-value">{{ spacing }}px</span>
-        </label>
-        <input
-          type="range"
-          v-model.number="spacing"
-          min="20"
-          max="200"
-          step="10"
-          class="slider"
-          @input="updatePreview"
-        />
-      </div>
-    </div>
-
-    <!-- 预览区域 -->
-    <div v-if="previewUrl" class="preview-section">
-      <h3>预览</h3>
-      <div class="preview-container">
-        <img :src="previewUrl" alt="预览" class="preview-image" />
       </div>
     </div>
 
@@ -608,22 +615,31 @@ watch(watermarkType, () => {
 
 .source-preview-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  width: 100%;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .source-preview {
   max-width: 200px;
   max-height: 200px;
-  border-radius: 8px;
   object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
 
 .source-info {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .file-name {
@@ -636,17 +652,29 @@ watch(watermarkType, () => {
   color: var(--color-text-secondary);
 }
 
-.settings-section {
+/* 两栏布局 */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
   margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: var(--color-background-soft);
-  border-radius: 12px;
 }
 
-.settings-section h3 {
-  margin-bottom: 1.5rem;
+/* 左侧配置面板 */
+.config-panel {
+  background: var(--color-background-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
+}
+
+.config-panel h3 {
+  margin: 0 0 1.5rem 0;
   font-size: 1.125rem;
   font-weight: 600;
+  color: var(--color-heading);
 }
 
 .setting-item {
@@ -664,6 +692,12 @@ watch(watermarkType, () => {
   margin-bottom: 0.75rem;
   font-weight: 500;
   color: var(--color-text);
+}
+
+.setting-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
 }
 
 .setting-value {
@@ -758,22 +792,50 @@ watch(watermarkType, () => {
   color: var(--color-text-secondary);
 }
 
-.preview-section {
-  margin-bottom: 2rem;
+/* 右侧预览面板 */
+.preview-panel {
+  background: var(--color-background-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-height: 400px;
 }
 
-.preview-section h3 {
-  margin-bottom: 1rem;
+.preview-panel h3 {
+  margin: 0 0 1.5rem 0;
   font-size: 1.125rem;
   font-weight: 600;
+  color: var(--color-heading);
+}
+
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-light);
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.preview-placeholder p {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
 .preview-container {
   display: flex;
   justify-content: center;
-  padding: 2rem;
-  background: var(--color-background-soft);
-  border-radius: 12px;
+  align-items: center;
+  min-height: 350px;
+  border-radius: 8px;
+  background: var(--color-background);
 }
 
 .preview-image {
@@ -781,6 +843,17 @@ watch(watermarkType, () => {
   max-height: 600px;
   border-radius: 8px;
   object-fit: contain;
+}
+
+/* 响应式：小屏幕改为单栏 */
+@media (max-width: 1024px) {
+  .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .config-panel {
+    position: static;
+  }
 }
 
 .toast {
