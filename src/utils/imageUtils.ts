@@ -468,3 +468,88 @@ export async function addImageWatermark(
     )
   })
 }
+
+/**
+ * 裁切图片
+ */
+export async function cropImage(
+  image: HTMLImageElement,
+  config: CropConfig
+): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  canvas.width = config.width
+  canvas.height = config.height
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('Canvas 上下文创建失败')
+  }
+
+  // 裁切并绘制
+  ctx.drawImage(
+    image,
+    config.x,
+    config.y,
+    config.width,
+    config.height,
+    0,
+    0,
+    config.width,
+    config.height
+  )
+
+  // 导出为 Blob
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('图片导出失败'))
+        }
+      },
+      'image/png',
+      1
+    )
+  })
+}
+
+/**
+ * 按比例计算裁切区域（居中裁切）
+ */
+export function calculateCropWithRatio(
+  imageWidth: number,
+  imageHeight: number,
+  ratio: number | null
+): CropConfig {
+  if (ratio === null) {
+    // 自由裁切，返回整个图片
+    return { x: 0, y: 0, width: imageWidth, height: imageHeight }
+  }
+
+  const imageRatio = imageWidth / imageHeight
+
+  let cropWidth: number
+  let cropHeight: number
+
+  if (imageRatio > ratio) {
+    // 图片更宽，以高度为基准
+    cropHeight = imageHeight
+    cropWidth = cropHeight * ratio
+  } else {
+    // 图片更高，以宽度为基准
+    cropWidth = imageWidth
+    cropHeight = cropWidth / ratio
+  }
+
+  // 居中裁切
+  const x = (imageWidth - cropWidth) / 2
+  const y = (imageHeight - cropHeight) / 2
+
+  return {
+    x: Math.max(0, x),
+    y: Math.max(0, y),
+    width: Math.min(cropWidth, imageWidth),
+    height: Math.min(cropHeight, imageHeight),
+  }
+}
