@@ -552,6 +552,17 @@ const clearAll = () => {
   background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
 
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .source-preview {
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+  }
+}
+
 .source-info {
   display: flex;
   flex-direction: column;
