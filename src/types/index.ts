@@ -152,3 +152,67 @@ export interface MqttConnectionInfo {
   connectedAt?: number
   reconnectCount: number
 }
+
+// ============ 图片编辑工具类型定义 ============
+
+// 水印位置
+export type WatermarkPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'middle-left'
+  | 'middle-center'
+  | 'middle-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
+
+// 文字水印配置
+export interface TextWatermarkConfig {
+  text: string
+  fontSize: number
+  fontFamily: string
+  color: string
+  opacity: number
+  rotation: number
+  position: WatermarkPosition
+  tiled: boolean
+  spacing?: number
+}
+
+// 图片水印配置
+export interface ImageWatermarkConfig {
+  imageFile: File | Blob
+  scale: number
+  opacity: number
+  position: WatermarkPosition
+  tiled: boolean
+  spacing?: number
+}
+
+// 裁切配置
+export interface CropConfig {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+// 预设裁切比例
+export interface CropRatio {
+  label: string
+  value: number | null
+}
+
+// 去水印工具类型
+export type RemovalTool = 'erase' | 'blur' | 'mosaic'
+
+// 去水印区域
+export interface RemovalArea {
+  x: number
+  y: number
+  width: number
+  height: number
+  tool: RemovalTool
+  intensity?: number
+}
