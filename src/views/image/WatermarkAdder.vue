@@ -1,0 +1,824 @@
+<template>
+  <ToolPanel title="加水印工具" description="添加文字或图片水印，支持自定义样式和平铺模式">
+    <!-- 操作工具栏 -->
+    <div class="toolbar">
+      <div class="tool-group">
+        <button @click="clearAll" class="btn btn-error" :disabled="!sourceFile">
+          <span class="btn-icon">🗑️</span>
+          清空
+        </button>
+        <button
+          @click="downloadResult"
+          class="btn btn-success"
+          :disabled="!previewUrl || isProcessing"
+        >
+          <span class="btn-icon">💾</span>
+          下载图片
+        </button>
+      </div>
+    </div>
+
+    <!-- 文件上传区域 -->
+    <div class="upload-section">
+      <div
+        class="drop-zone"
+        :class="{ 'drag-over': isDragOver, 'has-image': sourceFile }"
+        @drop="handleDrop"
+        @dragover.prevent="isDragOver = true"
+        @dragleave="isDragOver = false"
+        @click="selectFile"
+      >
+        <template v-if="!sourceFile">
+          <span class="upload-icon">🖼️</span>
+          <h3>拖拽图片到此处或点击选择</h3>
+          <p>支持 PNG、JPG、WebP 格式，最大 20MB</p>
+        </template>
+        <template v-else>
+          <div class="source-preview-container">
+            <img :src="sourcePreviewUrl" class="source-preview" alt="原图预览" />
+            <div class="source-info">
+              <span class="file-name">{{ sourceFile.name }}</span>
+              <span class="file-meta">
+                {{ formatFileSize(sourceFile.size) }} · {{ sourceDimensions?.width }}×{{
+                  sourceDimensions?.height
+                }}
+              </span>
+            </div>
+          </div>
+        </template>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          @change="handleFileSelect"
+          @click.stop
+          style="display: none"
+        />
+        <button @click.stop="selectFile" class="btn btn-primary">
+          {{ sourceFile ? '重新选择' : '选择图片' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 水印配置 -->
+    <div v-if="sourceFile" class="settings-section">
+      <h3>水印配置</h3>
+
+      <!-- 水印类型选择 -->
+      <div class="setting-item">
+        <label class="setting-label">水印类型</label>
+        <div class="watermark-type-selector">
+          <button
+            class="type-btn"
+            :class="{ active: watermarkType === 'text' }"
+            @click="watermarkType = 'text'"
+          >
+            📝 文字水印
+          </button>
+          <button
+            class="type-btn"
+            :class="{ active: watermarkType === 'image' }"
+            @click="watermarkType = 'image'"
+          >
+            🖼️ 图片水印
+          </button>
+        </div>
+      </div>
+
+      <!-- 文字水印配置 -->
+      <template v-if="watermarkType === 'text'">
+        <div class="setting-item">
+          <label class="setting-label">水印文字</label>
+          <input
+            type="text"
+            v-model="textConfig.text"
+            placeholder="输入水印文字"
+            class="text-input"
+            @input="updatePreview"
+          />
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">
+            字体大小
+            <span class="setting-value">{{ textConfig.fontSize }}px</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="textConfig.fontSize"
+            min="12"
+            max="120"
+            step="2"
+            class="slider"
+            @input="updatePreview"
+          />
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">字体</label>
+          <select v-model="textConfig.fontFamily" class="select-input" @change="updatePreview">
+            <option value="Arial">Arial</option>
+            <option value="'Microsoft YaHei'">微软雅黑</option>
+            <option value="'SimHei'">黑体</option>
+            <option value="'SimSun'">宋体</option>
+            <option value="'KaiTi'">楷体</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">颜色</label>
+          <input
+            type="color"
+            v-model="textConfig.color"
+            class="color-input"
+            @input="updatePreview"
+          />
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">
+            透明度
+            <span class="setting-value">{{ Math.round(textConfig.opacity * 100) }}%</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="textConfig.opacity"
+            min="0"
+            max="1"
+            step="0.05"
+            class="slider"
+            @input="updatePreview"
+          />
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">
+            旋转角度
+            <span class="setting-value">{{ textConfig.rotation }}°</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="textConfig.rotation"
+            min="-45"
+            max="45"
+            step="5"
+            class="slider"
+            @input="updatePreview"
+          />
+        </div>
+      </template>
+
+      <!-- 图片水印配置 -->
+      <template v-if="watermarkType === 'image'">
+        <div class="setting-item">
+          <label class="setting-label">水印图片</label>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            @change="handleWatermarkFileSelect"
+            class="file-input"
+          />
+          <p v-if="watermarkFile" class="file-info">
+            {{ watermarkFile.name }} ({{ formatFileSize(watermarkFile.size) }})
+          </p>
+        </div>
+
+        <div v-if="watermarkFile" class="setting-item">
+          <label class="setting-label">
+            缩放比例
+            <span class="setting-value">{{ Math.round(imageConfig.scale * 100) }}%</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="imageConfig.scale"
+            min="0.1"
+            max="1"
+            step="0.05"
+            class="slider"
+            @input="updatePreview"
+          />
+        </div>
+
+        <div v-if="watermarkFile" class="setting-item">
+          <label class="setting-label">
+            透明度
+            <span class="setting-value">{{ Math.round(imageConfig.opacity * 100) }}%</span>
+          </label>
+          <input
+            type="range"
+            v-model.number="imageConfig.opacity"
+            min="0"
+            max="1"
+            step="0.05"
+            class="slider"
+            @input="updatePreview"
+          />
+        </div>
+      </template>
+
+      <!-- 通用配置 -->
+      <div class="setting-item">
+        <label class="setting-label">位置</label>
+        <div class="position-grid">
+          <button
+            v-for="pos in positions"
+            :key="pos.value"
+            class="position-btn"
+            :class="{ active: currentPosition === pos.value }"
+            @click="setPosition(pos.value)"
+          >
+            {{ pos.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label class="setting-label">
+          <input type="checkbox" v-model="tiledMode" @change="updatePreview" />
+          平铺模式
+        </label>
+      </div>
+
+      <div v-if="tiledMode" class="setting-item">
+        <label class="setting-label">
+          间距
+          <span class="setting-value">{{ spacing }}px</span>
+        </label>
+        <input
+          type="range"
+          v-model.number="spacing"
+          min="20"
+          max="200"
+          step="10"
+          class="slider"
+          @input="updatePreview"
+        />
+      </div>
+    </div>
+
+    <!-- 预览区域 -->
+    <div v-if="previewUrl" class="preview-section">
+      <h3>预览</h3>
+      <div class="preview-container">
+        <img :src="previewUrl" alt="预览" class="preview-image" />
+      </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <Teleport to="body">
+      <div v-if="toast.show" class="toast" :class="`toast-${toast.type}`">
+        {{ toast.message }}
+      </div>
+    </Teleport>
+  </ToolPanel>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import ToolPanel from '@/components/ToolPanel.vue'
+import {
+  loadImage,
+  formatFileSize,
+  downloadBlob,
+  getFileNameWithoutExt,
+  addTextWatermark,
+  addImageWatermark,
+} from '@/utils/imageUtils'
+import type {
+  WatermarkPosition,
+  TextWatermarkConfig,
+  ImageWatermarkConfig,
+} from '@/types'
+
+// 文件相关
+const fileInput = ref<HTMLInputElement>()
+const sourceFile = ref<File>()
+const sourcePreviewUrl = ref('')
+const sourceDimensions = ref<{ width: number; height: number }>()
+const isDragOver = ref(false)
+
+// 水印类型
+const watermarkType = ref<'text' | 'image'>('text')
+
+// 文字水印配置
+const textConfig = ref<TextWatermarkConfig>({
+  text: '水印文字',
+  fontSize: 48,
+  fontFamily: 'Arial',
+  color: '#000000',
+  opacity: 0.5,
+  rotation: -30,
+  position: 'bottom-right',
+  tiled: false,
+})
+
+// 图片水印配置
+const watermarkFile = ref<File>()
+const imageConfig = ref<Omit<ImageWatermarkConfig, 'imageFile'>>({
+  scale: 0.3,
+  opacity: 0.8,
+  position: 'bottom-right',
+  tiled: false,
+})
+
+// 通用配置
+const currentPosition = ref<WatermarkPosition>('bottom-right')
+const tiledMode = ref(false)
+const spacing = ref(100)
+
+// 位置选项
+const positions = [
+  { label: '↖', value: 'top-left' as WatermarkPosition },
+  { label: '↑', value: 'top-center' as WatermarkPosition },
+  { label: '↗', value: 'top-right' as WatermarkPosition },
+  { label: '←', value: 'middle-left' as WatermarkPosition },
+  { label: '●', value: 'middle-center' as WatermarkPosition },
+  { label: '→', value: 'middle-right' as WatermarkPosition },
+  { label: '↙', value: 'bottom-left' as WatermarkPosition },
+  { label: '↓', value: 'bottom-center' as WatermarkPosition },
+  { label: '↘', value: 'bottom-right' as WatermarkPosition },
+]
+
+// 预览和处理
+const previewUrl = ref('')
+const isProcessing = ref(false)
+
+// Toast 通知
+const toast = ref({
+  show: false,
+  message: '',
+  type: 'success' as 'success' | 'error' | 'info',
+})
+
+// 显示 Toast
+const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  toast.value = { show: true, message, type }
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
+
+// 选择文件
+const selectFile = () => {
+  fileInput.value?.click()
+}
+
+// 处理文件选择
+const handleFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    await loadSourceFile(file)
+  }
+}
+
+// 处理拖拽
+const handleDrop = async (event: DragEvent) => {
+  event.preventDefault()
+  isDragOver.value = false
+
+  const file = event.dataTransfer?.files[0]
+  if (file && file.type.startsWith('image/')) {
+    await loadSourceFile(file)
+  } else {
+    showToast('请拖入图片文件', 'error')
+  }
+}
+
+// 加载源文件
+const loadSourceFile = async (file: File) => {
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('文件大小不能超过 20MB', 'error')
+    return
+  }
+
+  try {
+    sourceFile.value = file
+    sourcePreviewUrl.value = URL.createObjectURL(file)
+
+    const img = await loadImage(file)
+    sourceDimensions.value = { width: img.width, height: img.height }
+
+    await updatePreview()
+    showToast('图片加载成功', 'success')
+  } catch (error) {
+    showToast('图片加载失败', 'error')
+    console.error(error)
+  }
+}
+
+// 处理水印图片选择
+const handleWatermarkFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    watermarkFile.value = file
+    await updatePreview()
+  }
+}
+
+// 设置位置
+const setPosition = (position: WatermarkPosition) => {
+  currentPosition.value = position
+  textConfig.value.position = position
+  imageConfig.value.position = position
+  updatePreview()
+}
+
+// 更新预览
+const updatePreview = async () => {
+  if (!sourceFile.value) return
+
+  try {
+    isProcessing.value = true
+    const img = await loadImage(sourceFile.value)
+
+    let blob: Blob
+
+    if (watermarkType.value === 'text') {
+      const config: TextWatermarkConfig = {
+        ...textConfig.value,
+        position: currentPosition.value,
+        tiled: tiledMode.value,
+        spacing: tiledMode.value ? spacing.value : undefined,
+      }
+      blob = await addTextWatermark(img, config)
+    } else {
+      if (!watermarkFile.value) {
+        isProcessing.value = false
+        return
+      }
+      const config: ImageWatermarkConfig = {
+        imageFile: watermarkFile.value,
+        ...imageConfig.value,
+        position: currentPosition.value,
+        tiled: tiledMode.value,
+        spacing: tiledMode.value ? spacing.value : undefined,
+      }
+      blob = await addImageWatermark(img, config)
+    }
+
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value)
+    }
+    previewUrl.value = URL.createObjectURL(blob)
+  } catch (error) {
+    showToast('预览生成失败', 'error')
+    console.error(error)
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// 下载结果
+const downloadResult = () => {
+  if (!previewUrl.value || !sourceFile.value) return
+
+  fetch(previewUrl.value)
+    .then((res) => res.blob())
+    .then((blob) => {
+      const filename = `${getFileNameWithoutExt(sourceFile.value!.name)}_watermark.png`
+      downloadBlob(blob, filename)
+      showToast('下载成功', 'success')
+    })
+    .catch(() => {
+      showToast('下载失败', 'error')
+    })
+}
+
+// 清空
+const clearAll = () => {
+  sourceFile.value = undefined
+  sourcePreviewUrl.value = ''
+  sourceDimensions.value = undefined
+  watermarkFile.value = undefined
+  previewUrl.value = ''
+  textConfig.value.text = '水印文字'
+  showToast('已清空', 'info')
+}
+
+// 监听水印类型变化
+watch(watermarkType, () => {
+  updatePreview()
+})
+</script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-background-soft);
+  border-radius: 8px;
+}
+
+.tool-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-error {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-error:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.btn-icon {
+  font-size: 1.125rem;
+}
+
+.upload-section {
+  margin-bottom: 2rem;
+}
+
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 2rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background-soft);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.drop-zone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-background-mute);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.drop-zone.has-image {
+  min-height: auto;
+}
+
+.upload-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.source-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.source-preview {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.source-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.file-meta {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--color-background-soft);
+  border-radius: 12px;
+}
+
+.settings-section h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.setting-item {
+  margin-bottom: 1.5rem;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.setting-value {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+}
+
+.text-input,
+.select-input,
+.file-input {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+}
+
+.color-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.watermark-type-selector {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.type-btn.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.position-btn {
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.position-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.position-btn.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.file-info {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.preview-section {
+  margin-bottom: 2rem;
+}
+
+.preview-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.preview-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--color-background-soft);
+  border-radius: 12px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 600px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-success {
+  color: #10b981;
+  border-left: 4px solid #10b981;
+}
+
+.toast-error {
+  color: #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+.toast-info {
+  color: #3b82f6;
+  border-left: 4px solid #3b82f6;
+}
+</style>
