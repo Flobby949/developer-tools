@@ -114,6 +114,21 @@ export const useAppStore = defineStore('app', () => {
           path: '/image-compressor',
           description: '在线压缩图片、调整尺寸、转换格式，支持PNG/JPG/WebP',
         },
+        {
+          name: '去水印工具',
+          path: '/watermark-remover',
+          description: '手动擦除、模糊或马赛克处理图片水印，支持AI智能去水印',
+        },
+        {
+          name: '加水印工具',
+          path: '/watermark-adder',
+          description: '添加文字或图片水印，支持自定义样式和平铺模式',
+        },
+        {
+          name: '图片裁切工具',
+          path: '/image-cropper',
+          description: '自由裁切或按比例裁切图片，支持精确数值输入',
+        },
       ],
     },
     {
