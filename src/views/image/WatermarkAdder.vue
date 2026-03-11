@@ -273,8 +273,10 @@
 
     <!-- Toast 通知 -->
     <Teleport to="body">
-      <div v-if="toast.show" class="toast" :class="`toast-${toast.type}`">
-        {{ toast.message }}
+      <div v-if="toast.show" class="toast-notification" :class="`toast-${toast.type}`">
+        <span class="toast-icon">{{ getToastIcon() }}</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button @click="toast.show = false" class="toast-close">×</button>
       </div>
     </Teleport>
   </ToolPanel>
@@ -363,6 +365,16 @@ const showToast = (message: string, type: 'success' | 'error' | 'info' = 'succes
   setTimeout(() => {
     toast.value.show = false
   }, 3000)
+}
+
+// 获取 Toast 图标
+function getToastIcon(): string {
+  const icons = {
+    success: '✅',
+    error: '❌',
+    info: 'ℹ️',
+  }
+  return icons[toast.value.type] || 'ℹ️'
 }
 
 // 选择文件
@@ -856,20 +868,72 @@ watch(watermarkType, () => {
   }
 }
 
-.toast {
+.toast-notification {
   position: fixed;
-  top: 2rem;
-  right: 2rem;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  min-width: 320px;
+  max-width: 500px;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-weight: 500;
-  z-index: 9999;
-  animation: slideIn 0.3s ease-out;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.3s ease-out;
+  backdrop-filter: blur(10px);
 }
 
-@keyframes slideIn {
+.toast-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-left: 4px solid #047857;
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-left: 4px solid #b91c1c;
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-left: 4px solid #1d4ed8;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  flex: 1;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideInRight {
   from {
     transform: translateX(100%);
     opacity: 0;
@@ -878,20 +942,5 @@ watch(watermarkType, () => {
     transform: translateX(0);
     opacity: 1;
   }
-}
-
-.toast-success {
-  color: #10b981;
-  border-left: 4px solid #10b981;
-}
-
-.toast-error {
-  color: #ef4444;
-  border-left: 4px solid #ef4444;
-}
-
-.toast-info {
-  color: #3b82f6;
-  border-left: 4px solid #3b82f6;
 }
 </style>
