@@ -2,6 +2,15 @@
  * 图片压缩和格式转换工具函数
  */
 
+import type {
+  WatermarkPosition,
+  TextWatermarkConfig,
+  ImageWatermarkConfig,
+  CropConfig,
+  CropRatio,
+  RemovalArea,
+} from '@/types'
+
 /**
  * 支持的图片格式
  */
@@ -19,6 +28,20 @@ export const IMAGE_FORMATS: ImageFormatOption[] = [
   { value: 'image/jpeg', label: 'JPEG', extension: '.jpg', supportsTransparency: false, supportsQuality: true },
   { value: 'image/png', label: 'PNG', extension: '.png', supportsTransparency: true, supportsQuality: false },
   { value: 'image/webp', label: 'WebP', extension: '.webp', supportsTransparency: true, supportsQuality: true },
+]
+
+/**
+ * 预设裁切比例
+ */
+export const CROP_RATIOS: CropRatio[] = [
+  { label: '自由裁切', value: null },
+  { label: '1:1 (正方形)', value: 1 },
+  { label: '4:3', value: 4 / 3 },
+  { label: '3:4', value: 3 / 4 },
+  { label: '16:9', value: 16 / 9 },
+  { label: '9:16', value: 9 / 16 },
+  { label: '3:2', value: 3 / 2 },
+  { label: '2:3', value: 2 / 3 },
 ]
 
 /**
@@ -257,4 +280,191 @@ export async function hasTransparency(file: File | Blob): Promise<boolean> {
   }
 
   return false
+}
+
+/**
+ * 计算水印位置
+ */
+export function calculateWatermarkPosition(
+  imageWidth: number,
+  imageHeight: number,
+  watermarkWidth: number,
+  watermarkHeight: number,
+  position: WatermarkPosition
+): { x: number; y: number } {
+  const padding = 20 // 边距
+
+  switch (position) {
+    case 'top-left':
+      return { x: padding, y: padding }
+    case 'top-center':
+      return { x: (imageWidth - watermarkWidth) / 2, y: padding }
+    case 'top-right':
+      return { x: imageWidth - watermarkWidth - padding, y: padding }
+    case 'middle-left':
+      return { x: padding, y: (imageHeight - watermarkHeight) / 2 }
+    case 'middle-center':
+      return {
+        x: (imageWidth - watermarkWidth) / 2,
+        y: (imageHeight - watermarkHeight) / 2,
+      }
+    case 'middle-right':
+      return {
+        x: imageWidth - watermarkWidth - padding,
+        y: (imageHeight - watermarkHeight) / 2,
+      }
+    case 'bottom-left':
+      return { x: padding, y: imageHeight - watermarkHeight - padding }
+    case 'bottom-center':
+      return {
+        x: (imageWidth - watermarkWidth) / 2,
+        y: imageHeight - watermarkHeight - padding,
+      }
+    case 'bottom-right':
+      return {
+        x: imageWidth - watermarkWidth - padding,
+        y: imageHeight - watermarkHeight - padding,
+      }
+    default:
+      return { x: padding, y: padding }
+  }
+}
+
+/**
+ * 添加文字水印
+ */
+export async function addTextWatermark(
+  image: HTMLImageElement,
+  config: TextWatermarkConfig
+): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  canvas.width = image.width
+  canvas.height = image.height
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('Canvas 上下文创建失败')
+  }
+
+  // 绘制原图
+  ctx.drawImage(image, 0, 0)
+
+  // 设置文字样式
+  ctx.font = `${config.fontSize}px ${config.fontFamily}`
+  ctx.fillStyle = config.color
+  ctx.globalAlpha = config.opacity
+
+  // 测量文字尺寸
+  const metrics = ctx.measureText(config.text)
+  const textWidth = metrics.width
+  const textHeight = config.fontSize
+
+  if (config.tiled) {
+    // 平铺模式
+    const spacing = config.spacing || 100
+    ctx.save()
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    ctx.rotate((config.rotation * Math.PI) / 180)
+
+    for (let y = -canvas.height; y < canvas.height; y += textHeight + spacing) {
+      for (let x = -canvas.width; x < canvas.width; x += textWidth + spacing) {
+        ctx.fillText(config.text, x, y)
+      }
+    }
+    ctx.restore()
+  } else {
+    // 单个水印
+    const pos = calculateWatermarkPosition(
+      canvas.width,
+      canvas.height,
+      textWidth,
+      textHeight,
+      config.position
+    )
+
+    ctx.save()
+    ctx.translate(pos.x + textWidth / 2, pos.y + textHeight / 2)
+    ctx.rotate((config.rotation * Math.PI) / 180)
+    ctx.fillText(config.text, -textWidth / 2, textHeight / 4)
+    ctx.restore()
+  }
+
+  // 导出为 Blob
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('图片导出失败'))
+        }
+      },
+      'image/png',
+      1
+    )
+  })
+}
+
+/**
+ * 添加图片水印
+ */
+export async function addImageWatermark(
+  image: HTMLImageElement,
+  config: ImageWatermarkConfig
+): Promise<Blob> {
+  const watermarkImg = await loadImage(config.imageFile)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = image.width
+  canvas.height = image.height
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('Canvas 上下文创建失败')
+  }
+
+  // 绘制原图
+  ctx.drawImage(image, 0, 0)
+
+  // 计算水印尺寸
+  const watermarkWidth = watermarkImg.width * config.scale
+  const watermarkHeight = watermarkImg.height * config.scale
+
+  ctx.globalAlpha = config.opacity
+
+  if (config.tiled) {
+    // 平铺模式
+    const spacing = config.spacing || 50
+    for (let y = 0; y < canvas.height; y += watermarkHeight + spacing) {
+      for (let x = 0; x < canvas.width; x += watermarkWidth + spacing) {
+        ctx.drawImage(watermarkImg, x, y, watermarkWidth, watermarkHeight)
+      }
+    }
+  } else {
+    // 单个水印
+    const pos = calculateWatermarkPosition(
+      canvas.width,
+      canvas.height,
+      watermarkWidth,
+      watermarkHeight,
+      config.position
+    )
+
+    ctx.drawImage(watermarkImg, pos.x, pos.y, watermarkWidth, watermarkHeight)
+  }
+
+  // 导出为 Blob
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('图片导出失败'))
+        }
+      },
+      'image/png',
+      1
+    )
+  })
 }
