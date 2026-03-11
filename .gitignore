@@ -36,3 +36,6 @@ coverage
 
 *.tsbuildinfo
 .ace-tool/
+
+# Git worktrees
+.worktrees/
