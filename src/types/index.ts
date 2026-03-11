@@ -216,3 +216,22 @@ export interface RemovalArea {
   tool: RemovalTool
   intensity?: number
 }
+
+// 水印区域
+export interface WatermarkRegion {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  confidence: number // 0-1, 置信度
+  type?: 'text' | 'logo' | 'pattern'
+}
+
+// 检测配置
+export interface DetectionConfig {
+  sensitivity: number // 0-1, 灵敏度
+  minRegionSize: number // 最小区域大小(像素)
+  maxRegionSize: number // 最大区域大小(像素)
+  confidenceThreshold: number // 置信度阈值
+}
