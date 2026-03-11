@@ -553,3 +553,179 @@ export function calculateCropWithRatio(
     height: Math.min(cropHeight, imageHeight),
   }
 }
+
+/**
+ * 擦除区域（填充周围颜色的平均值）
+ */
+export function eraseArea(imageData: ImageData, area: RemovalArea): ImageData {
+  const { x, y, width, height } = area
+  const data = imageData.data
+  const imgWidth = imageData.width
+
+  // 采样周围像素计算平均颜色
+  const sampleSize = 5
+  let r = 0,
+    g = 0,
+    b = 0,
+    count = 0
+
+  // 采样上边缘
+  for (let i = Math.max(0, x); i < Math.min(imgWidth, x + width); i += sampleSize) {
+    const idx = (Math.max(0, y - 1) * imgWidth + i) * 4
+    r += data[idx]
+    g += data[idx + 1]
+    b += data[idx + 2]
+    count++
+  }
+
+  // 采样下边缘
+  for (let i = Math.max(0, x); i < Math.min(imgWidth, x + width); i += sampleSize) {
+    const idx = (Math.min(imageData.height - 1, y + height) * imgWidth + i) * 4
+    r += data[idx]
+    g += data[idx + 1]
+    b += data[idx + 2]
+    count++
+  }
+
+  // 计算平均颜色
+  r = Math.round(r / count)
+  g = Math.round(g / count)
+  b = Math.round(b / count)
+
+  // 填充区域
+  for (let row = y; row < y + height; row++) {
+    for (let col = x; col < x + width; col++) {
+      if (row >= 0 && row < imageData.height && col >= 0 && col < imgWidth) {
+        const idx = (row * imgWidth + col) * 4
+        data[idx] = r
+        data[idx + 1] = g
+        data[idx + 2] = b
+        // alpha 保持不变
+      }
+    }
+  }
+
+  return imageData
+}
+
+/**
+ * 模糊区域（高斯模糊）
+ */
+export function blurArea(imageData: ImageData, area: RemovalArea): ImageData {
+  const { x, y, width, height, intensity = 5 } = area
+  const data = imageData.data
+  const imgWidth = imageData.width
+  const radius = Math.max(1, Math.floor(intensity))
+
+  // 创建临时数据副本
+  const tempData = new Uint8ClampedArray(data)
+
+  // 对区域内每个像素应用模糊
+  for (let row = y; row < y + height; row++) {
+    for (let col = x; col < x + width; col++) {
+      if (row >= 0 && row < imageData.height && col >= 0 && col < imgWidth) {
+        let r = 0,
+          g = 0,
+          b = 0,
+          count = 0
+
+        // 采样周围像素
+        for (let dy = -radius; dy <= radius; dy++) {
+          for (let dx = -radius; dx <= radius; dx++) {
+            const sampleRow = row + dy
+            const sampleCol = col + dx
+
+            if (
+              sampleRow >= 0 &&
+              sampleRow < imageData.height &&
+              sampleCol >= 0 &&
+              sampleCol < imgWidth
+            ) {
+              const idx = (sampleRow * imgWidth + sampleCol) * 4
+              r += tempData[idx]
+              g += tempData[idx + 1]
+              b += tempData[idx + 2]
+              count++
+            }
+          }
+        }
+
+        // 设置平均值
+        const idx = (row * imgWidth + col) * 4
+        data[idx] = Math.round(r / count)
+        data[idx + 1] = Math.round(g / count)
+        data[idx + 2] = Math.round(b / count)
+      }
+    }
+  }
+
+  return imageData
+}
+
+/**
+ * 马赛克区域（像素块化）
+ */
+export function mosaicArea(imageData: ImageData, area: RemovalArea): ImageData {
+  const { x, y, width, height, intensity = 10 } = area
+  const data = imageData.data
+  const imgWidth = imageData.width
+  const blockSize = Math.max(2, Math.floor(intensity))
+
+  // 对区域按块处理
+  for (let row = y; row < y + height; row += blockSize) {
+    for (let col = x; col < x + width; col += blockSize) {
+      // 计算块的平均颜色
+      let r = 0,
+        g = 0,
+        b = 0,
+        count = 0
+
+      for (let dy = 0; dy < blockSize; dy++) {
+        for (let dx = 0; dx < blockSize; dx++) {
+          const sampleRow = row + dy
+          const sampleCol = col + dx
+
+          if (
+            sampleRow >= 0 &&
+            sampleRow < imageData.height &&
+            sampleCol >= 0 &&
+            sampleCol < imgWidth
+          ) {
+            const idx = (sampleRow * imgWidth + sampleCol) * 4
+            r += data[idx]
+            g += data[idx + 1]
+            b += data[idx + 2]
+            count++
+          }
+        }
+      }
+
+      // 计算平均值
+      r = Math.round(r / count)
+      g = Math.round(g / count)
+      b = Math.round(b / count)
+
+      // 填充整个块
+      for (let dy = 0; dy < blockSize; dy++) {
+        for (let dx = 0; dx < blockSize; dx++) {
+          const fillRow = row + dy
+          const fillCol = col + dx
+
+          if (
+            fillRow >= 0 &&
+            fillRow < imageData.height &&
+            fillCol >= 0 &&
+            fillCol < imgWidth
+          ) {
+            const idx = (fillRow * imgWidth + fillCol) * 4
+            data[idx] = r
+            data[idx + 1] = g
+            data[idx + 2] = b
+          }
+        }
+      }
+    }
+  }
+
+  return imageData
+}
