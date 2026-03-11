@@ -520,22 +520,31 @@ const clearAll = () => {
 
 .source-preview-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  width: 100%;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .source-preview {
   max-width: 200px;
   max-height: 200px;
-  border-radius: 8px;
   object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
 
 .source-info {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .file-name {
