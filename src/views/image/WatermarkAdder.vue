@@ -19,46 +19,11 @@
     </div>
 
     <!-- 文件上传区域 -->
-    <div class="upload-section">
-      <div
-        class="drop-zone"
-        :class="{ 'drag-over': isDragOver, 'has-image': sourceFile }"
-        @drop="handleDrop"
-        @dragover.prevent="isDragOver = true"
-        @dragleave="isDragOver = false"
-        @click="selectFile"
-      >
-        <template v-if="!sourceFile">
-          <span class="upload-icon">🖼️</span>
-          <h3>拖拽图片到此处或点击选择</h3>
-          <p>支持 PNG、JPG、WebP 格式，最大 20MB</p>
-        </template>
-        <template v-else>
-          <div class="source-preview-container">
-            <img :src="sourcePreviewUrl" class="source-preview" alt="原图预览" />
-            <div class="source-info">
-              <span class="file-name">{{ sourceFile.name }}</span>
-              <span class="file-meta">
-                {{ formatFileSize(sourceFile.size) }} · {{ sourceDimensions?.width }}×{{
-                  sourceDimensions?.height
-                }}
-              </span>
-            </div>
-          </div>
-        </template>
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          @change="handleFileSelect"
-          @click.stop
-          style="display: none"
-        />
-        <button @click.stop="selectFile" class="btn btn-primary">
-          {{ sourceFile ? '重新选择' : '选择图片' }}
-        </button>
-      </div>
-    </div>
+    <ImageUploader
+      ref="uploaderRef"
+      @file-selected="handleFileSelected"
+      @error="showToast($event, 'error')"
+    />
 
     <!-- 两栏布局 -->
     <div v-if="sourceFile" class="two-column-layout">
@@ -285,6 +250,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ToolPanel from '@/components/ToolPanel.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import {
   loadImage,
   formatFileSize,
@@ -300,10 +266,8 @@ import type {
 } from '@/types'
 
 // 文件相关
-const fileInput = ref<HTMLInputElement>()
+const uploaderRef = ref<InstanceType<typeof ImageUploader>>()
 const sourceFile = ref<File>()
-const sourcePreviewUrl = ref('')
-const sourceDimensions = ref<{ width: number; height: number }>()
 const isDragOver = ref(false)
 
 // 水印类型
@@ -377,53 +341,11 @@ function getToastIcon(): string {
   return icons[toast.value.type] || 'ℹ️'
 }
 
-// 选择文件
-const selectFile = () => {
-  fileInput.value?.click()
-}
-
 // 处理文件选择
-const handleFileSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    await loadSourceFile(file)
-  }
-}
-
-// 处理拖拽
-const handleDrop = async (event: DragEvent) => {
-  event.preventDefault()
-  isDragOver.value = false
-
-  const file = event.dataTransfer?.files[0]
-  if (file && file.type.startsWith('image/')) {
-    await loadSourceFile(file)
-  } else {
-    showToast('请拖入图片文件', 'error')
-  }
-}
-
-// 加载源文件
-const loadSourceFile = async (file: File) => {
-  if (file.size > 20 * 1024 * 1024) {
-    showToast('文件大小不能超过 20MB', 'error')
-    return
-  }
-
-  try {
-    sourceFile.value = file
-    sourcePreviewUrl.value = URL.createObjectURL(file)
-
-    const img = await loadImage(file)
-    sourceDimensions.value = { width: img.width, height: img.height }
-
-    await updatePreview()
-    showToast('图片加载成功', 'success')
-  } catch (error) {
-    showToast('图片加载失败', 'error')
-    console.error(error)
-  }
+const handleFileSelected = async (file: File) => {
+  sourceFile.value = file
+  await updatePreview()
+  showToast('图片加载成功', 'success')
 }
 
 // 处理水印图片选择
@@ -507,9 +429,8 @@ const downloadResult = () => {
 
 // 清空
 const clearAll = () => {
+  uploaderRef.value?.clear()
   sourceFile.value = undefined
-  sourcePreviewUrl.value = ''
-  sourceDimensions.value = undefined
   watermarkFile.value = undefined
   previewUrl.value = ''
   textConfig.value.text = '水印文字'
@@ -527,28 +448,31 @@ watch(watermarkType, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: var(--color-background-soft);
+  background-color: var(--color-background-soft);
   border-radius: 8px;
+  border: 1px solid var(--color-border);
 }
 
 .tool-group {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn:disabled {
@@ -556,124 +480,40 @@ watch(watermarkType, () => {
   cursor: not-allowed;
 }
 
+.btn-icon {
+  font-size: 1rem;
+}
+
 .btn-primary {
-  background: var(--color-primary);
+  background-color: var(--vt-c-green);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  background-color: var(--color-primary-hover, #059669);
 }
 
 .btn-success {
-  background: #10b981;
+  background-color: var(--vt-c-green);
   color: white;
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #059669;
+  background-color: var(--color-primary-hover, #059669);
+}
+
+.btn-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-error {
-  background: #ef4444;
+  background-color: var(--vt-c-red);
   color: white;
 }
 
 .btn-error:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-.btn-icon {
-  font-size: 1.125rem;
-}
-
-.upload-section {
-  margin-bottom: 2rem;
-}
-
-.drop-zone {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 280px;
-  padding: 2rem;
-  border: 2px dashed var(--color-border);
-  border-radius: 12px;
-  background: var(--color-background-soft);
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.drop-zone:hover {
-  border-color: var(--color-primary);
-  background: var(--color-background-mute);
-}
-
-.drop-zone.drag-over {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
-.drop-zone.has-image {
-  min-height: auto;
-}
-
-.upload-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.source-preview-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.source-preview {
-  max-width: 200px;
-  max-height: 200px;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
-    linear-gradient(-45deg, #eee 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #eee 75%),
-    linear-gradient(-45deg, transparent 75%, #eee 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-}
-
-/* 深色主题适配 */
-@media (prefers-color-scheme: dark) {
-  .source-preview {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    background-image:
-      linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
-      linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
-  }
-}
-
-.source-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.file-name {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.file-meta {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  background-color: var(--color-danger-hover, #dc2626);
 }
 
 /* 两栏布局 */
@@ -877,6 +717,24 @@ watch(watermarkType, () => {
 
   .config-panel {
     position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .drop-zone {
+    padding: 2rem 1rem;
+  }
+
+  .upload-icon {
+    font-size: 2rem;
+  }
+
+  .toast-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
   }
 }
 

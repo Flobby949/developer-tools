@@ -11,45 +11,14 @@
     </div>
 
     <!-- 文件上传区域 -->
-    <div class="upload-section">
-      <div
-        class="drop-zone"
-        :class="{ 'drag-over': isDragOver, 'has-image': sourceImage }"
-        @drop="handleDrop"
-        @dragover.prevent="isDragOver = true"
-        @dragleave="isDragOver = false"
-        @click="selectFile"
-      >
-        <template v-if="!sourceImage">
-          <span class="upload-icon">🖼️</span>
-          <h3>拖拽图片到此处或点击选择</h3>
-          <p>支持 PNG、JPG、GIF、WebP 格式，建议使用正方形图片</p>
-        </template>
-        <template v-else>
-          <div class="source-preview-container">
-            <img :src="sourceImageUrl" class="source-preview" alt="原图预览" />
-            <div class="source-info">
-              <span class="file-name">{{ sourceImage.name }}</span>
-              <span class="file-size">{{ formatFileSize(sourceImage.size) }}</span>
-              <span v-if="sourceImageDimensions" class="file-dimensions">
-                {{ sourceImageDimensions.width }} × {{ sourceImageDimensions.height }}
-              </span>
-            </div>
-          </div>
-        </template>
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/png,image/jpeg,image/gif,image/webp"
-          @change="handleFileSelect"
-          @click.stop
-          style="display: none"
-        />
-        <button @click.stop="selectFile" class="btn btn-primary">
-          {{ sourceImage ? '重新选择' : '选择图片' }}
-        </button>
-      </div>
-    </div>
+    <ImageUploader
+      ref="uploaderRef"
+      accept="image/png,image/jpeg,image/gif,image/webp"
+      :max-size="10 * 1024 * 1024"
+      description="支持 PNG、JPG、GIF、WebP 格式，建议使用正方形图片"
+      @file-selected="handleFileSelected"
+      @error="showToast($event, 'error')"
+    />
 
     <!-- 尺寸选择 -->
     <div v-if="sourceImage" class="size-section">
@@ -157,6 +126,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ToolPanel from '@/components/ToolPanel.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import {
   DEFAULT_ICO_SIZES,
   generatePreviews as generatePreviewsUtil,
@@ -168,10 +138,8 @@ import {
 } from '@/utils/icoUtils'
 
 // 响应式状态
-const fileInput = ref<HTMLInputElement | null>(null)
+const uploaderRef = ref<InstanceType<typeof ImageUploader>>()
 const sourceImage = ref<File | null>(null)
-const sourceImageUrl = ref('')
-const sourceImageDimensions = ref<{ width: number; height: number } | null>(null)
 const isDragOver = ref(false)
 const icoSizes = ref<IcoSize[]>(JSON.parse(JSON.stringify(DEFAULT_ICO_SIZES)))
 const previews = ref<IcoPreviewItem[]>([])
@@ -181,61 +149,16 @@ const toast = ref({ show: false, message: '', type: 'info' as 'success' | 'error
 // 计算属性
 const enabledSizes = computed(() => icoSizes.value.filter((s) => s.enabled))
 
-// 监听源图变化，自动更新预览
+// 监听源图变化,自动更新预览
 watch(sourceImage, async () => {
   if (sourceImage.value && enabledSizes.value.length > 0) {
     await updatePreviews()
   }
 })
 
-// 文件选择
-function selectFile() {
-  fileInput.value?.click()
-}
-
-function handleFileSelect(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) {
-    processFile(file)
-  }
-}
-
-function handleDrop(event: DragEvent) {
-  event.preventDefault()
-  isDragOver.value = false
-  const file = event.dataTransfer?.files?.[0]
-  if (file) {
-    processFile(file)
-  }
-}
-
-async function processFile(file: File) {
-  if (!file.type.startsWith('image/')) {
-    showToast('请选择图片文件', 'error')
-    return
-  }
-
-  // 文件大小限制 10MB
-  if (file.size > 10 * 1024 * 1024) {
-    showToast('文件大小不能超过 10MB', 'error')
-    return
-  }
-
-  // 清理旧的 URL
-  if (sourceImageUrl.value) {
-    URL.revokeObjectURL(sourceImageUrl.value)
-  }
-
+// 处理文件选择
+async function handleFileSelected(file: File) {
   sourceImage.value = file
-  sourceImageUrl.value = URL.createObjectURL(file)
-
-  // 获取图片尺寸
-  const img = new Image()
-  img.onload = () => {
-    sourceImageDimensions.value = { width: img.width, height: img.height }
-  }
-  img.src = sourceImageUrl.value
-
   showToast('图片加载成功', 'success')
 
   // 生成预览
@@ -312,23 +235,15 @@ function clearSizes() {
 
 // 清空所有
 function clearAll() {
-  // 清理 URL
-  if (sourceImageUrl.value) {
-    URL.revokeObjectURL(sourceImageUrl.value)
-  }
+  // 清理预览 URL
   for (const preview of previews.value) {
     URL.revokeObjectURL(preview.dataUrl)
   }
 
+  uploaderRef.value?.clear()
   sourceImage.value = null
-  sourceImageUrl.value = ''
-  sourceImageDimensions.value = null
   previews.value = []
   icoSizes.value = JSON.parse(JSON.stringify(DEFAULT_ICO_SIZES))
-
-  if (fileInput.value) {
-    fileInput.value.value = ''
-  }
 
   showToast('已清空所有内容', 'info')
 }
@@ -368,86 +283,6 @@ function getToastIcon(): string {
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-.upload-section {
-  margin-bottom: 2rem;
-}
-
-.drop-zone {
-  border: 2px dashed var(--color-border);
-  border-radius: 12px;
-  padding: 3rem;
-  text-align: center;
-  background-color: var(--color-background-soft);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.drop-zone:hover,
-.drop-zone.drag-over {
-  border-color: var(--vt-c-green);
-  background-color: var(--color-background-mute);
-}
-
-.drop-zone.has-image {
-  padding: 2rem;
-}
-
-.upload-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.drop-zone h3 {
-  margin: 1rem 0;
-  color: var(--color-heading);
-}
-
-.drop-zone p {
-  color: var(--color-text-light);
-  margin-bottom: 1.5rem;
-}
-
-.source-preview-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.source-preview {
-  max-width: 200px;
-  max-height: 200px;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
-    linear-gradient(-45deg, #eee 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #eee 75%),
-    linear-gradient(-45deg, transparent 75%, #eee 75%);
-  background-size: 16px 16px;
-  background-position:
-    0 0,
-    0 8px,
-    8px -8px,
-    -8px 0px;
-}
-
-.source-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  justify-content: center;
-  font-size: 0.875rem;
-  color: var(--color-text-light);
-}
-
-.file-name {
-  font-weight: 500;
-  color: var(--color-text);
 }
 
 .size-section {
