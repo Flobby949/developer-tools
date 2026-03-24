@@ -54,6 +54,7 @@
           height="500px"
           :show-clear="false"
           :show-copy="true"
+          :show-expand="true"
         />
       </div>
     </div>
@@ -246,6 +247,7 @@ const loadErrorExample = () => {
 .editor-section {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .examples-section {

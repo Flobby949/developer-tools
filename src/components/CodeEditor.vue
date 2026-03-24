@@ -1,34 +1,52 @@
 <template>
-  <div class="code-editor">
-    <div class="editor-header" v-if="showHeader">
-      <span class="editor-title">{{ title }}</span>
-      <div class="editor-actions">
-        <button
-          v-if="showCopy"
-          @click="copyContent"
-          class="action-btn action-btn-copy"
-          title="复制内容"
-        >
-          <span class="action-icon">{{ copyIcon }}</span>
-          <span class="action-text">{{ copyText }}</span>
-        </button>
-        <button
-          v-if="showClear"
-          @click="clearContent"
-          class="action-btn action-btn-clear"
-          title="清空内容"
-        >
-          <span class="action-icon">🗑️</span>
-          <span class="action-text">清空</span>
-        </button>
+  <Teleport to="body" :disabled="!isExpanded">
+    <div
+      class="code-editor-shell"
+      :class="{ 'code-editor-shell-expanded': isExpanded }"
+      @click.self="closeExpand"
+    >
+      <div class="code-editor" :class="{ 'code-editor-expanded': isExpanded }">
+        <div class="editor-header" v-if="showHeader">
+          <span class="editor-title">{{ title }}</span>
+          <div class="editor-actions">
+            <button
+              v-if="showExpand"
+              @click="toggleExpand"
+              class="action-btn action-btn-expand action-btn-icon-only"
+              :disabled="!canExpand"
+              :title="expandButtonLabel"
+              :aria-label="expandButtonLabel"
+            >
+              <span class="action-icon">{{ expandIcon }}</span>
+            </button>
+            <button
+              v-if="showCopy"
+              @click="copyContent"
+              class="action-btn action-btn-copy"
+              title="复制内容"
+            >
+              <span class="action-icon">{{ copyIcon }}</span>
+              <span class="action-text">{{ copyText }}</span>
+            </button>
+            <button
+              v-if="showClear"
+              @click="clearContent"
+              class="action-btn action-btn-clear"
+              title="清空内容"
+            >
+              <span class="action-icon">🗑️</span>
+              <span class="action-text">清空</span>
+            </button>
+          </div>
+        </div>
+        <div ref="editorContainer" class="editor-container"></div>
       </div>
     </div>
-    <div ref="editorContainer" class="editor-container"></div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as monaco from 'monaco-editor'
 import { copyToClipboard } from '@/utils'
 import { useAppStore } from '@/stores/app'
@@ -43,6 +61,7 @@ interface Props {
   readonly?: boolean
   height?: string
   placeholder?: string
+  showExpand?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,6 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   height: '300px',
   placeholder: '',
+  showExpand: false,
 })
 
 const emit = defineEmits<{
@@ -63,8 +83,72 @@ const emit = defineEmits<{
 const editorContainer = ref<HTMLDivElement>()
 const copyText = ref('复制')
 const copyIcon = ref('📋')
+const isExpanded = ref(false)
 const appStore = useAppStore()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
+let previousBodyOverflow = ''
+let previousHtmlOverflow = ''
+
+const canExpand = computed(() => props.showExpand && props.modelValue.trim().length > 0)
+const expandIcon = computed(() => (isExpanded.value ? '✕' : '⛶'))
+const expandButtonLabel = computed(() => (isExpanded.value ? '退出全屏阅读' : '放大结果框'))
+
+const syncEditorLayout = () => {
+  if (!editor) {
+    return
+  }
+
+  requestAnimationFrame(() => {
+    editor?.layout()
+    requestAnimationFrame(() => {
+      editor?.layout()
+    })
+  })
+}
+
+const lockPageScroll = () => {
+  previousBodyOverflow = document.body.style.overflow
+  previousHtmlOverflow = document.documentElement.style.overflow
+  document.body.style.overflow = 'hidden'
+  document.documentElement.style.overflow = 'hidden'
+}
+
+const unlockPageScroll = () => {
+  document.body.style.overflow = previousBodyOverflow
+  document.documentElement.style.overflow = previousHtmlOverflow
+}
+
+const openExpand = () => {
+  if (!canExpand.value) {
+    return
+  }
+
+  isExpanded.value = true
+}
+
+const closeExpand = () => {
+  if (!isExpanded.value) {
+    return
+  }
+
+  isExpanded.value = false
+}
+
+const toggleExpand = () => {
+  if (isExpanded.value) {
+    closeExpand()
+    return
+  }
+
+  openExpand()
+}
+
+const handleWindowKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && isExpanded.value) {
+    event.preventDefault()
+    closeExpand()
+  }
+}
 
 onMounted(async () => {
   await nextTick()
@@ -107,9 +191,13 @@ onMounted(async () => {
       }
     })
   }
+
+  window.addEventListener('keydown', handleWindowKeydown)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', handleWindowKeydown)
+  unlockPageScroll()
   if (editor) {
     editor.dispose()
   }
@@ -147,6 +235,23 @@ watch(
     }
   },
 )
+
+watch(canExpand, (expandable) => {
+  if (!expandable && isExpanded.value) {
+    closeExpand()
+  }
+})
+
+watch(isExpanded, async (expanded) => {
+  if (expanded) {
+    lockPageScroll()
+  } else {
+    unlockPageScroll()
+  }
+
+  await nextTick()
+  syncEditorLayout()
+})
 
 // 复制内容
 const copyContent = async () => {
@@ -199,11 +304,42 @@ defineExpose({
 </script>
 
 <style scoped>
+.code-editor-shell {
+  width: 100%;
+  min-width: 0;
+}
+
+.code-editor-shell-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+}
+
 .code-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
   background-color: var(--color-background);
+}
+
+.code-editor-expanded {
+  width: min(1400px, 100%);
+  height: calc(100vh - 3rem);
+  max-height: calc(100vh - 3rem);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
 }
 
 .editor-header {
@@ -241,6 +377,11 @@ defineExpose({
   color: var(--color-text);
 }
 
+.action-btn:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
 .action-btn:hover {
   background-color: var(--color-background-mute);
   border-color: var(--color-border-hover);
@@ -257,6 +398,15 @@ defineExpose({
   border-color: var(--color-primary);
 }
 
+.action-btn-expand {
+  color: var(--color-info);
+}
+
+.action-btn-expand:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: var(--color-info);
+}
+
 .action-btn-clear {
   color: var(--vt-c-red);
 }
@@ -271,6 +421,12 @@ defineExpose({
   line-height: 1;
 }
 
+.action-btn-icon-only {
+  justify-content: center;
+  padding: 0.5rem;
+  min-width: 2.5rem;
+}
+
 .action-text {
   font-size: 0.875rem;
   white-space: nowrap;
@@ -279,10 +435,18 @@ defineExpose({
 .editor-container {
   height: v-bind(height);
   width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
   /* 移动端触摸滚动优化 */
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   overflow: auto;
+}
+
+.code-editor-expanded .editor-container {
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Monaco Editor 移动端优化 */
@@ -337,6 +501,15 @@ defineExpose({
 
   .editor-actions {
     gap: 0.5rem;
+  }
+
+  .code-editor-expanded {
+    height: calc(100vh - 1.5rem);
+    max-height: calc(100vh - 1.5rem);
+  }
+
+  .code-editor-shell-expanded {
+    padding: 0.75rem;
   }
 }
 </style>
